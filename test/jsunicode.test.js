@@ -13,10 +13,12 @@
     }
 
     describe("JSUnicode", function() {
-        describe("Decode UTF-16", function () {
-            it("Decodes string encoded as UTF-16 in hex", function () {
-                var plainText = jsunicode.decodeUtf16("hex", "0020");
-                expect(plainText).to.equal(" ");
+        describe("UTF-16", function () {
+            describe("Decode (valid)", function () {
+                it("Decodes string encoded as UTF-16 in hex which includes a non-BMP character", function () {
+                    var plainText = jsunicode.decode("0023D799D83DDE020024", { encoding: "UTF-16", throwOnError: true });
+                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\x24");
+                });
             });
         });
     });

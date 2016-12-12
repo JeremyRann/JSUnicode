@@ -10,39 +10,46 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 (function () {
     "use strict";
-    /* Roadmap: For a first pass, the basic functions will be:
-    encode(string, options)
-    decode(bytes, options)
-    countEncodedBytes(string, encoding, byteReader)
-    byteReader.Get(name)
-    byteReader.Register(name, byteReader)
-    byteWriter.Get(name)
-    byteWriter.Register(name, byteReader)
-    
-    Supported encodings will be:
-    UTF-8
-    UTF-16BE
-    UTF-16LE
-    UTF-16 (assumed BE)
-    
-    Supported byte readers/writers will be:
-    hex
-    base64
-    byteArray
-
-    Encode/Decode options:
-    encoding (default UTF-8)
-    byteReader/byteWriter (default hex)
-    throwOnError (default false)
-    */
-    var encodings = require("./jsunicode.encodings");
-    var utf16 = require("./jsunicode.encoding.utf16");
+    var extend = require("extend");
     var byteReader = require("./jsunicode.bytereader");
+    var encodings = {};
 
-    encodings.register("UTF-16", utf16);
-    encodings.register("UTF-16BE", utf16);
+    var registerEncoding = function (encodingName, encoding) {
+        encodings[encodingName] = encoding;
+    };
 
-    exports.decode = encodings.decode;
-    exports.byteReader = byteReader;
+    var getEncoding = function (encodingName) {
+        return encodings[encodingName];
+    };
+
+    var decode = function (inpBytes, options) {
+        if (inpBytes === null || inpBytes === undefined) {
+            return inpBytes;
+        }
+
+        options = extend({}, {
+            encoding: "UTF-8",
+            byteReader: "hex",
+            throwOnError: false
+        }, options || {});
+
+        var encoding = getEncoding(options.encoding);
+        if (getEncoding === undefined) {
+            throw "Unrecognized encoding: " + options.encoding;
+        }
+
+        var reader = byteReader.get(options.byteReader);
+        if (reader === undefined) {
+            throw "Unrecognized byte reader name: " + options.byteReader;
+        }
+
+        reader.begin(inpBytes);
+        var result = encoding.decode(reader, options);
+        return result;
+    };
+
+    exports.register = registerEncoding;
+    exports.get = getEncoding;
+    exports.decode = decode;
 }());
 

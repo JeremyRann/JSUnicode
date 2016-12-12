@@ -10,7 +10,7 @@
     requirejs(["jquery", "../bin/jsunicode.js"], function ($, jsunicode) {
         $(document).ready(function () {
             $("#decode").click(function () {
-                $("#output").text(jsunicode.decodeUtf16("hex", $("#decodeText").val()));
+                $("#output").text(jsunicode.decode($("#decodeText").val(), { encoding: "UTF-16" }));
             });
 
             $("#encode").click(function () {

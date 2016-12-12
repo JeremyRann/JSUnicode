@@ -5,8 +5,8 @@ module.exports = {
     output: {
         path: "bundle-out",
         publicPath: "dev-bin",
-        library: "jsunicode",
-        libraryTarget: "umd",
+        //library: "jsunicode",
+        //libraryTarget: "umd",
         filename: "[name].js"
     },
     module: {
