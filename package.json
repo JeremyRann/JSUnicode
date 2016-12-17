@@ -5,6 +5,7 @@
   "main": "js/jsunicode.js",
   "scripts": {
     "build": "npm test && webpack --progress --config webpack.build.config.js",
+    "build-min": "npm run build && webpack --progress --config webpack.build-min.config.js",
     "start": "webpack-dev-server --inline",
     "test": "mocha --reporter spec"
   },
