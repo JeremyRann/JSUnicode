@@ -43,6 +43,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     encodings.register("UTF-16BE", utf16);
 
     exports.decode = encodings.decode;
+    exports.encode = encodings.encode;
     exports.byteReader = byteReader;
 }());
 

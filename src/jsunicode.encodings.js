@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     "use strict";
     var extend = require("extend");
     var byteReader = require("./jsunicode.bytereader");
+    var byteWriter = require("./jsunicode.bytewriter");
     var encodings = {};
 
     var registerEncoding = function (encodingName, encoding) {
@@ -20,6 +21,94 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     var getEncoding = function (encodingName) {
         return encodings[encodingName];
+    };
+
+    // Resolve a JavaScript string into an array of unicode code points
+    var getCodePoints = function (inpString, throwOnError) {
+        var result = [];
+        var searchingForSurrogate = false;
+        var highSurrogate = null;
+        var handleError = function (message) {
+            if (throwOnError) {
+                throw message;
+            }
+            else {
+                result.push(0xfffd);
+            }
+        };
+
+        for (var i = 0; i < inpString.length; i++) {
+            var currentPoint = inpString.charCodeAt(i);
+            // currentPoint < 0? Probably not possible, but covering bases anyway
+            if (currentPoint > 0xffff || currentPoint < 0) {
+                handleError("String contains invalid character data");
+                // If we're looking for a low surrogate, we now have two errors; one for the missing pair,
+                // and one for the strange found character
+                if (searchingForSurrogate) {
+                    result.push(0xfffd);
+                    searchingForSurrogate = false;
+                }
+            }
+            else if (currentPoint <= 0xd7ff || currentPoint >= 0xE000) {
+                if (searchingForSurrogate === true) {
+                    handleError("Unmatched surrogate pair in string");
+                    searchingForSurrogate = false;
+                }
+                result.push(currentPoint);
+            }
+            else {
+                if (searchingForSurrogate) {
+                    if (currentPoint < 0xdc00) {
+                        handleError("Low surrogate value not valid");
+                    }
+                    else {
+                        result.push((0x10000 + ((highSurrogate - 0xd800) << 10) + currentPoint - 0xdc00));
+                    }
+                    searchingForSurrogate = false;
+                }
+                else {
+                    if (currentPoint >= 0xdc00) {
+                        handleError("Unexpected high surrogate found");
+                    }
+                    else {
+                        searchingForSurrogate = true;
+                        highSurrogate = currentPoint;
+                    }
+                }
+            }
+        }
+
+        return result;
+    };
+
+    var encode = function (inpString, options) {
+        if (inpString === null || inpString === undefined) {
+            return inpString;
+        }
+
+        options = extend({}, {
+            encoding: "UTF-8",
+            byteWriter: "hex",
+            throwOnError: false
+        }, options || {});
+
+        var encoding = getEncoding(options.encoding);
+        if (getEncoding === undefined) {
+            throw "Unrecognized encoding: " + options.encoding;
+        }
+
+        var writer = byteWriter.get(options.byteWriter);
+        if (writer === undefined) {
+            throw "Unrecognized byte writer name: " + options.byteWriter;
+        }
+
+        var codePoints = getCodePoints(inpString, options.throwOnError);
+
+        encoding.encode(codePoints, writer, options);
+
+        var result = writer.finish();
+
+        return result;
     };
 
     var decode = function (inpBytes, options) {
@@ -51,5 +140,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     exports.register = registerEncoding;
     exports.get = getEncoding;
     exports.decode = decode;
+    exports.encode = encode;
 }());
 

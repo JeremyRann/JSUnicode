@@ -7,15 +7,5 @@
         }
     });
 
-    requirejs(["jquery", "../bin/jsunicode.js"], function ($, jsunicode) {
-        $(document).ready(function () {
-            $("#decode").click(function () {
-                $("#output").text(jsunicode.decode($("#decodeText").val(), { encoding: "UTF-16" }));
-            });
-
-            $("#encode").click(function () {
-                $("#output").text("(not implemented yet)");
-            });
-        });
-    });
+    require(["smoke"], function () { });
 }());

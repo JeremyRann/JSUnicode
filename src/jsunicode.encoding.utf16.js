@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     // This polyfill is necessary for browsers without String.fromCodePoint (sigh)
     // I suppose I could just use the fromCharCode option always, but I'm a bit worried that
-    // at some point a JavaScript implementation might complate that fromCharCode is to an extent
+    // at some point a JavaScript implementation might complain that fromCharCode is sort of
     // nonsense for a low surrogate value
     var fromCodePoint = function (highSurrogate, lowSurrogate) {
         // In this case, "highSurrogate" is really just the code point
@@ -87,9 +87,27 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
         return resultBuilder.join("");
     };
-    //encode: function (writer, options)
-    var encode = function () {
-        throw "(not implemented)";
+
+    var encode = function (codePoints, writer/*, options*/) {
+        var writeTwoBytes = function (number) {
+            writer.write((number & 0xff00) >> 8);
+            writer.write(number & 0xff);
+        };
+        for (var i = 0; i < codePoints.length; i++) {
+            var codePoint = codePoints[i];
+            // We're not going to bother validating code points here; the encoding library should take care of that
+            // for us before we get here
+            if (codePoint < 0x10000) {
+                writeTwoBytes(codePoint);
+            }
+            else {
+                var basis = codePoint - 0x10000;
+                var highSurrogate = 0xd800 + (basis >> 10);
+                var lowSurrogate = 0xdc00 + (basis & 0x3ff);
+                writeTwoBytes(highSurrogate);
+                writeTwoBytes(lowSurrogate);
+            }
+        }
     };
 
     exports.decode = decode;
