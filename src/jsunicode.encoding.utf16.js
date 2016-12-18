@@ -46,6 +46,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             }
         };
 
+        var isLittleEndian = false;
+
+        if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
+            isLittleEndian = true;
+        }
+
         var resultBuilder = [];
         var firstByte = reader.read();
         var secondByte = reader.read();
@@ -55,7 +61,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             if (secondByte === null) {
                 resultBuilder.push(errorString("Odd number of bytes in byte stream (must be even for UTF-16)"));
             }
-            codePoint = firstByte * 0x100 + secondByte;
+            if (isLittleEndian) {
+                codePoint = secondByte * 0x100 + firstByte;
+            }
+            else {
+                codePoint = firstByte * 0x100 + secondByte;
+            }
             if (surrogateCodePoint !== null) {
                 if (codePoint < 0xDC00 || codePoint > 0xDFFF) {
                     resultBuilder.push(errorString("Surrogate code point not found when expected"));
@@ -88,11 +99,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         return resultBuilder.join("");
     };
 
-    var encode = function (codePoints, writer/*, options*/) {
+    var encode = function (codePoints, writer, options) {
+        var isLittleEndian = false;
+
+        if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
+            isLittleEndian = true;
+        }
+
         var writeTwoBytes = function (number) {
-            writer.write((number & 0xff00) >> 8);
-            writer.write(number & 0xff);
+            if (isLittleEndian) {
+                writer.write(number & 0xff);
+                writer.write((number & 0xff00) >> 8);
+            }
+            else {
+                writer.write((number & 0xff00) >> 8);
+                writer.write(number & 0xff);
+            }
         };
+
         for (var i = 0; i < codePoints.length; i++) {
             var codePoint = codePoints[i];
             // We're not going to bother validating code points here; the encoding library should take care of that

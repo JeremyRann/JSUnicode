@@ -93,7 +93,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         }, options || {});
 
         var encoding = getEncoding(options.encoding);
-        if (getEncoding === undefined) {
+        if (encoding === undefined) {
             throw "Unrecognized encoding: " + options.encoding;
         }
 
