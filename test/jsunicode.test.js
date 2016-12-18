@@ -1,4 +1,4 @@
-/*global describe it */
+/*global describe it Uint8Array*/
 (function (global) {
     "use strict";
 
@@ -111,5 +111,37 @@
                 expect(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", "UTF-32")).to.equal(20);
             });
         });
+        describe("Binary representations", function () {
+            it("Encodes binary as base64", function () {
+                expect(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: "base64" })).to.equal("I+2emfCfmILCsSQ=");
+                expect(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1", { byteWriter: "base64" })).to.equal("I+2emfCfmILCsQ==");
+                expect(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\u00b1", { byteWriter: "base64" })).to.equal("I+2emfCfmILCscKx");
+            });
+            it("Encodes binary as a byte array", function () {
+                expect(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: "byteArray" })).to.members([
+                    0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]);
+            });
+            it("Encodes binary as a Uint8Array", function () {
+                expect(Array.prototype.slice.call(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    byteWriter: "Uint8Array"
+                }))).to.members([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]);
+            });
+            it("Decodes binary as base64", function () {
+                expect(jsunicode.decode("I+2emfCfmILCsSQ=", { byteReader: "base64" })).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
+                expect(jsunicode.decode("I+2emfCfmILCsQ==", { byteReader: "base64" })).to.equal("\x23\ud799\ud83d\ude02\u00b1");
+                expect(jsunicode.decode("I+2emfCfmILCscKx", { byteReader: "base64" })).to.equal("\x23\ud799\ud83d\ude02\u00b1\u00b1");
+            });
+            it("Decodes binary as a byte array", function () {
+                expect(jsunicode.decode([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], {
+                    byteReader: "byteArray"
+                })).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
+            });
+            it("Decodes binary as a Uint8Array", function () {
+                expect(jsunicode.decode(new Uint8Array([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), {
+                    byteReader: "Uint8Array"
+                })).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
+            });
+        });
     });
 }(this));
+

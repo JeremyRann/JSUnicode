@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     var utf16 = require("./jsunicode.encoding.utf16");
     var utf8 = require("./jsunicode.encoding.utf8");
     var byteReader = require("./jsunicode.bytereader");
+    var byteWriter = require("./jsunicode.bytewriter");
 
     encodings.register("UTF-8", utf8);
     encodings.register("UTF-16", utf16);
@@ -38,6 +39,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     exports.decode = encodings.decode;
     exports.encode = encodings.encode;
     exports.byteReader = byteReader;
+    exports.byteWriter = byteWriter;
     exports.countEncodedBytes = countEncodedBytes;
 }());
 
