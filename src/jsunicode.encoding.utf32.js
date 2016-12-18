@@ -11,36 +11,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function () {
     "use strict";
 
-    // This polyfill is necessary for browsers without String.fromCodePoint (sigh)
-    // I suppose I could just use the fromCharCode option always, but I'm a bit worried that
-    // at some point a JavaScript implementation might complain that fromCharCode is sort of
-    // nonsense for a low surrogate value
-    var fromCodePoint = function (codePoint) {
-        if (String.hasOwnProperty("fromCodePoint")) {
-            return String.fromCodePoint(codePoint);
-        }
-        else {
-            if (codePoint >= 0x10000) {
-                var basis = codePoint - 0x10000;
-                var highSurrogate = 0xd800 + (basis >> 10);
-                var lowSurrogate = 0xdc00 + (basis & 0x3ff);
-                return String.fromCharCode(highSurrogate) + String.fromCharCode(lowSurrogate);
-            }
-            else {
-                return String.fromCharCode(codePoint);
-            }
-        }
-    };
+    var encUtil = require("./jsunicode.encoding.utilities");
 
     var decode = function (reader, options) {
-        var errorString = function (err) {
-            if (options.throwOnError) {
-                throw err;
-            }
-            else {
-                return "\ufffd";
-            }
-        };
+        var toe = options.throwOnError;
 
         var isLittleEndian = false;
 
@@ -53,7 +27,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
         while (bytes[0] !== null) {
             if (bytes[1] === null || bytes[2] === null || bytes[3] === null) {
-                resultBuilder.push(errorString("Unexpected end of input"));
+                resultBuilder.push(encUtil.errorString("Unexpected end of input", toe));
             }
 
             var codePoint;
@@ -64,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                 codePoint = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
             }
 
-            resultBuilder.push(fromCodePoint(codePoint));
+            resultBuilder.push(encUtil.fromCodePoint(codePoint));
 
             bytes = [reader.read(), reader.read(), reader.read(), reader.read()];
         }
@@ -99,5 +73,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     exports.decode = decode;
     exports.encode = encode;
 }());
-
 

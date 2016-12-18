@@ -11,26 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function () {
     "use strict";
 
-    // This polyfill is necessary for browsers without String.fromCodePoint (sigh)
-    // I suppose I could just use the fromCharCode option always, but I'm a bit worried that
-    // at some point a JavaScript implementation might complain that fromCharCode is sort of
-    // nonsense for a low surrogate value
-    var fromCodePoint = function (codePoint) {
-        if (String.hasOwnProperty("fromCodePoint")) {
-            return String.fromCodePoint(codePoint);
-        }
-        else {
-            if (codePoint >= 0x10000) {
-                var basis = codePoint - 0x10000;
-                var highSurrogate = 0xd800 + (basis >> 10);
-                var lowSurrogate = 0xdc00 + (basis & 0x3ff);
-                return String.fromCharCode(highSurrogate) + String.fromCharCode(lowSurrogate);
-            }
-            else {
-                return String.fromCharCode(codePoint);
-            }
-        }
-    };
+    var encUtil = require("./jsunicode.encoding.utilities");
 
     var decode = function (reader, options) {
         var resultBuilder = [];
@@ -38,19 +19,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         var byteCount;
         var continuationByte;
         var codePoint;
-
-        var errorString = function (err) {
-            if (options.throwOnError) {
-                throw err;
-            }
-            else {
-                return "\ufffd";
-            }
-        };
+        var toe = options.throwOnError;
+        // Generally, it's invalid to encode a surrogate pair in UTF-8, but we'll allow a user
+        // to specify that they have iffy data using the allowEncodedSurrogatePair option. In
+        // that case, we still want to validate that the surrogate pair is really a pair.
+        var highSurrogate = null;
 
         while (currentByte !== null) {
             if (currentByte < 0x80) {
-                resultBuilder.push(fromCodePoint(currentByte));
+                resultBuilder.push(encUtil.fromCodePoint(currentByte));
+                highSurrogate = null;
             }
             else {
                 if ((currentByte & 0xe0) === 0xc0) {
@@ -66,26 +44,46 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                     codePoint = (currentByte & 0x07) << 18;
                 }
                 else {
-                    resultBuilder.push(errorString("Invalid leading byte"));
+                    resultBuilder.push(encUtil.errorString("Invalid leading byte", toe));
                 }
 
 
                 for (var i = byteCount - 1; i > 0; i--) {
                     continuationByte = reader.read();
                     if (continuationByte === null) {
-                        resultBuilder.push(errorString("Unexpected end of byte stream"));
+                        resultBuilder.push(encUtil.errorString("Unexpected end of byte stream", toe));
                     }
                     else if ((continuationByte & 0xc0) !== 0x80) {
-                        resultBuilder.push(errorString("Invalid continuation byte"));
+                        resultBuilder.push(encUtil.errorString("Invalid continuation byte", toe));
                     }
                     else {
                         codePoint += (continuationByte - 0x80) << ((i - 1) * 6);
                     }
                 }
 
-                resultBuilder.push(fromCodePoint(codePoint));
+                if (!encUtil.validateCodePoint(codePoint)) {
+                    if (options.allowEncodedSurrogatePair && highSurrogate === null && codePoint >= 0xd800 && codePoint <= 0xdbff) {
+                        highSurrogate = codePoint;
+                    }
+                    else if (options.allowEncodedSurrogatePair && highSurrogate !== null && codePoint >= 0xdc00 && codePoint <= 0xdfff) {
+                        resultBuilder.push(encUtil.fromCodePoint(highSurrogate, codePoint));
+                        highSurrogate = null;
+                    }
+                    else {
+                        resultBuilder.push(encUtil.errorString("Invalid Unicode code point detected", toe));
+                        highSurrogate = null;
+                    }
+                }
+                else {
+                    resultBuilder.push(encUtil.fromCodePoint(codePoint));
+                    highSurrogate = null;
+                }
             }
             currentByte = reader.read();
+        }
+
+        if (options.allowEncodedSurrogatePair && highSurrogate !== null) {
+            resultBuilder.push(encUtil.errorString("Unmatched encoded surrogate pair", toe));
         }
 
         return resultBuilder.join("");
@@ -118,5 +116,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     exports.decode = decode;
     exports.encode = encode;
 }());
-
 

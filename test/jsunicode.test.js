@@ -7,27 +7,25 @@
     var result = new StringBuilder();
 
     result.AppendLine("Encode UTF-8");
-    result.AppendLine(String.Join(", ", Encoding.UTF8.GetBytes("\x23\ud799\ud83d\ude02\u00b1\x24").Select(b => "0x" + b.ToString("X2"))));
+    result.AppendLine(String.Join(", ", Encoding.UTF8.GetBytes(sourceString).Select(b => "0x" + b.ToString("X2"))));
     result.AppendLine("Decode UTF-8");
     result.AppendLine(Encoding.UTF8.GetString(new byte[] { 0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24 }));
     result.AppendLine("Encode UTF-16 (BE, default)");
-    result.AppendLine(String.Join(", ", Encoding.BigEndianUnicode.GetBytes("\x23\ud799\ud83d\ude02\u00b1\x24").Select(b => "0x" + b.ToString("X2"))));
+    result.AppendLine(String.Join(", ", Encoding.BigEndianUnicode.GetBytes(sourceString).Select(b => "0x" + b.ToString("X2"))));
     result.AppendLine("Decode UTF-16 (BE, default)");
     result.AppendLine(Encoding.BigEndianUnicode.GetString(new byte[] { 0x00, 0x23, 0xD7, 0x99, 0xD8, 0x3D, 0xDE, 0x02, 0x00, 0xB1, 0x00, 0x24 }));
     result.AppendLine("Encode UTF-16 (LE)");
-    result.AppendLine(String.Join(", ", Encoding.Unicode.GetBytes("\x23\ud799\ud83d\ude02\u00b1\x24").Select(b => "0x" + b.ToString("X2"))));
+    result.AppendLine(String.Join(", ", Encoding.Unicode.GetBytes(sourceString).Select(b => "0x" + b.ToString("X2"))));
     result.AppendLine("Decode UTF-16 (LE)");
     result.AppendLine(Encoding.Unicode.GetString(new byte[] { 0x23, 0x00, 0x99, 0xD7, 0x3D, 0xD8, 0x02, 0xDE, 0xB1, 0x00, 0x24, 0x00 }));
     result.AppendLine("Encode UTF-32 (BE, default)");
-    result.AppendLine(String.Join(", ", (new UTF32Encoding(true, false)).GetBytes("\x23\ud799\ud83d\ude02\u00b1\x24").Select(b => "0x" + b.ToString("X2"))));
+    result.AppendLine(String.Join(", ", (new UTF32Encoding(true, false)).GetBytes(sourceString).Select(b => "0x" + b.ToString("X2"))));
     result.AppendLine("Decode UTF-32 (BE, default)");
     result.AppendLine((new UTF32Encoding(true, false)).GetString(new byte[] { 0x00, 0x00, 0x00, 0x23, 0x00, 0x00, 0xD7, 0x99, 0x00, 0x01, 0xF6, 0x02, 0x00, 0x00, 0x00, 0xB1, 0x00, 0x00, 0x00, 0x24 }));
     result.AppendLine("Encode UTF-32 (LE)");
-    result.AppendLine(String.Join(", ", Encoding.UTF32.GetBytes("\x23\ud799\ud83d\ude02\u00b1\x24").Select(b => "0x" + b.ToString("X2"))));
+    result.AppendLine(String.Join(", ", Encoding.UTF32.GetBytes(sourceString).Select(b => "0x" + b.ToString("X2"))));
     result.AppendLine("Decode UTF-32 (LE)");
     result.AppendLine(Encoding.UTF32.GetString(new byte[] { 0x23, 0x00, 0x00, 0x00, 0x99, 0xD7, 0x00, 0x00, 0x02, 0xF6, 0x01, 0x00, 0xB1, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00 }));
-
-    Console.WriteLine(result.ToString());
     */
     var expect, jsunicode;
     if (global.chai && global.jsunicode) {

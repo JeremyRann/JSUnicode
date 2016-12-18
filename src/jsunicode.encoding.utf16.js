@@ -11,41 +11,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function () {
     "use strict";
 
-    // This polyfill is necessary for browsers without String.fromCodePoint (sigh)
-    // I suppose I could just use the fromCharCode option always, but I'm a bit worried that
-    // at some point a JavaScript implementation might complain that fromCharCode is sort of
-    // nonsense for a low surrogate value
-    var fromCodePoint = function (highSurrogate, lowSurrogate) {
-        // In this case, "highSurrogate" is really just the code point
-        if (lowSurrogate === undefined) {
-            if (String.hasOwnProperty("fromCodePoint")) {
-                return String.fromCodePoint(highSurrogate);
-            }
-            else {
-                return String.fromCharCode(highSurrogate);
-            }
-        }
-        else {
-            if (String.hasOwnProperty("fromCodePoint")) {
-                var codePoint = 0x10000 + ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00);
-                return String.fromCodePoint(codePoint);
-            }
-            else {
-                return String.fromCharCode(highSurrogate) + String.fromCharCode(lowSurrogate);
-            }
-        }
-    };
+    var encUtil = require("./jsunicode.encoding.utilities");
 
     var decode = function (reader, options) {
-        var errorString = function (err) {
-            if (options.throwOnError) {
-                throw err;
-            }
-            else {
-                return "\ufffd";
-            }
-        };
-
+        var toe = options.throwOnError;
         var isLittleEndian = false;
 
         if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
@@ -59,7 +28,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         var surrogateCodePoint = null;
         while (firstByte !== null) {
             if (secondByte === null) {
-                resultBuilder.push(errorString("Odd number of bytes in byte stream (must be even for UTF-16)"));
+                resultBuilder.push(encUtil.errorString("Odd number of bytes in byte stream (must be even for UTF-16)", toe));
             }
             if (isLittleEndian) {
                 codePoint = secondByte * 0x100 + firstByte;
@@ -69,23 +38,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             }
             if (surrogateCodePoint !== null) {
                 if (codePoint < 0xDC00 || codePoint > 0xDFFF) {
-                    resultBuilder.push(errorString("Surrogate code point not found when expected"));
+                    resultBuilder.push(encUtil.errorString("Surrogate code point not found when expected", toe));
                 }
                 else {
-                    resultBuilder.push(fromCodePoint(surrogateCodePoint, codePoint));
+                    resultBuilder.push(encUtil.fromCodePoint(surrogateCodePoint, codePoint));
                 }
                 surrogateCodePoint = null;
             }
             else {
                 if (codePoint >= 0xDC00 && codePoint <= 0xDFFF) {
-                    resultBuilder.push(errorString("Invalid code point (in high surrogate range)"));
+                    resultBuilder.push(encUtil.errorString("Invalid code point (in high surrogate range)", toe));
                     surrogateCodePoint = null;
                 }
                 else if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
                     surrogateCodePoint = codePoint;
                 }
                 else {
-                    resultBuilder.push(fromCodePoint(codePoint));
+                    resultBuilder.push(encUtil.fromCodePoint(codePoint));
                     surrogateCodePoint = null;
                 }
             }
@@ -93,7 +62,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             secondByte = reader.read();
         }
         if (surrogateCodePoint !== null) {
-            resultBuilder.push(errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)"));
+            resultBuilder.push(encUtil.errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)", toe));
         }
 
         return resultBuilder.join("");
