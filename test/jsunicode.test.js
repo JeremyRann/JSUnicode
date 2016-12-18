@@ -39,89 +39,76 @@
 
     describe("JSUnicode", function() {
         describe("UTF-8", function () {
-            describe("Encode", function () {
-                it("Encodes a string as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
-                    var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { throwOnError: true }).toUpperCase();
-                    expect(encoded).to.equal("23ED9E99F09F9882C2B124");
-                });
+            it("Encodes a string as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { throwOnError: true }).toUpperCase();
+                expect(encoded).to.equal("23ED9E99F09F9882C2B124");
             });
-            describe("Decode (valid)", function () {
-                it("Decodes a string encoded as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
-                    var plainText = jsunicode.decode("23ED9E99F09F9882C2B124", { throwOnError: true });
-                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
-                });
+            it("Decodes a string encoded as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
+                var plainText = jsunicode.decode("23ED9E99F09F9882C2B124", { throwOnError: true });
+                expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
             });
         });
         describe("UTF-16", function () {
-            describe("Encode", function () {
-                it("Encodes a string as UTF-16 in hex which includes a non-BMP character", function () {
-                    var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-                        encoding: "UTF-16",
-                        throwOnError: true
-                    }).toUpperCase();
+            it("Encodes a string as UTF-16 in hex which includes a non-BMP character", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    encoding: "UTF-16",
+                    throwOnError: true
+                }).toUpperCase();
 
-                    expect(encoded).to.equal("0023D799D83DDE0200B10024");
-                });
+                expect(encoded).to.equal("0023D799D83DDE0200B10024");
             });
-            describe("Decode (valid)", function () {
-                it("Decodes a string encoded as UTF-16 in hex which includes a non-BMP character", function () {
-                    var plainText = jsunicode.decode("0023D799D83DDE0200B10024", { encoding: "UTF-16", throwOnError: true });
-                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
-                });
+            it("Decodes a string encoded as UTF-16 in hex which includes a non-BMP character", function () {
+                var plainText = jsunicode.decode("0023D799D83DDE0200B10024", { encoding: "UTF-16", throwOnError: true });
+                expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
             });
-        });
-        describe("UTF-16LE", function () {
-            describe("Encode", function () {
-                it("Encodes a string as UTF-16 (Little Endian) in hex which includes a non-BMP character", function () {
-                    var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-                        encoding: "UTF-16LE",
-                        throwOnError: true
-                    }).toUpperCase();
+            it("Encodes a string as UTF-16 (Little Endian) in hex which includes a non-BMP character", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    encoding: "UTF-16LE",
+                    throwOnError: true
+                }).toUpperCase();
 
-                    expect(encoded).to.equal("230099D73DD802DEB1002400");
-                });
+                expect(encoded).to.equal("230099D73DD802DEB1002400");
             });
-            describe("Decode (valid)", function () {
-                it("Decodes a string encoded as UTF-16 (Little Endian) in hex which includes a non-BMP character", function () {
-                    var plainText = jsunicode.decode("230099D73DD802DEB1002400", { encoding: "UTF-16LE", throwOnError: true });
-                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
-                });
+            it("Decodes a string encoded as UTF-16 (Little Endian) in hex which includes a non-BMP character", function () {
+                var plainText = jsunicode.decode("230099D73DD802DEB1002400", { encoding: "UTF-16LE", throwOnError: true });
+                expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
             });
         });
         describe("UTF-32", function () {
-            describe("Encode", function () {
-                it("Encodes a string as UTF-32 in hex which includes a non-BMP character", function () {
-                    var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-                        encoding: "UTF-32",
-                        throwOnError: true
-                    }).toUpperCase();
+            it("Encodes a string as UTF-32 in hex which includes a non-BMP character", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    encoding: "UTF-32",
+                    throwOnError: true
+                }).toUpperCase();
 
-                    expect(encoded).to.equal("000000230000D7990001F602000000B100000024");
-                });
+                expect(encoded).to.equal("000000230000D7990001F602000000B100000024");
             });
-            describe("Decode (valid)", function () {
-                it("Decodes a string encoded as UTF-32 in hex which includes a non-BMP character", function () {
-                    var plainText = jsunicode.decode("000000230000D7990001F602000000B100000024", { encoding: "UTF-32", throwOnError: true });
-                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
-                });
+            it("Decodes a string encoded as UTF-32 in hex which includes a non-BMP character", function () {
+                var plainText = jsunicode.decode("000000230000D7990001F602000000B100000024", { encoding: "UTF-32", throwOnError: true });
+                expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
+            });
+            it("Encodes a string as UTF-32 (Little Endian) in hex which includes a non-BMP character", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    encoding: "UTF-32LE",
+                    throwOnError: true
+                }).toUpperCase();
+
+                expect(encoded).to.equal("2300000099D7000002F60100B100000024000000");
+            });
+            it("Decodes a string encoded as UTF-32 (Little Endian) in hex which includes a non-BMP character", function () {
+                var plainText = jsunicode.decode("2300000099D7000002F60100B100000024000000", { encoding: "UTF-32LE", throwOnError: true });
+                expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
             });
         });
-        describe("UTF-32LE", function () {
-            describe("Encode", function () {
-                it("Encodes a string as UTF-32 (Little Endian) in hex which includes a non-BMP character", function () {
-                    var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-                        encoding: "UTF-32LE",
-                        throwOnError: true
-                    }).toUpperCase();
-
-                    expect(encoded).to.equal("2300000099D7000002F60100B100000024000000");
-                });
+        describe("Count", function () {
+            it("Counts bytes in UTF-8", function () {
+                expect(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24")).to.equal(11);
             });
-            describe("Decode (valid)", function () {
-                it("Decodes a string encoded as UTF-32 (Little Endian) in hex which includes a non-BMP character", function () {
-                    var plainText = jsunicode.decode("2300000099D7000002F60100B100000024000000", { encoding: "UTF-32LE", throwOnError: true });
-                    expect(plainText).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
-                });
+            it("Counts bytes in UTF-16", function () {
+                expect(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", "UTF-16")).to.equal(12);
+            });
+            it("Counts bytes in UTF-32", function () {
+                expect(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", "UTF-32")).to.equal(20);
             });
         });
     });

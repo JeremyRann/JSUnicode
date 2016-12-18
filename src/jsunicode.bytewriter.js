@@ -46,6 +46,26 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         };
     });
 
+    register("count", function () {
+        var byteCount = 0;
+        var write = function (currentByte) {
+            if (typeof(currentByte) !== "number" || currentByte < 0 || currentByte > 255) {
+                throw "Invalid byte";
+            }
+
+            byteCount++;
+        };
+
+        var finish = function () {
+            return byteCount;
+        };
+
+        return {
+            write: write,
+            finish: finish
+        };
+    });
+
     var get = function (name) {
         var writer = byteWriters[name];
         if (typeof(writer) === "function") {

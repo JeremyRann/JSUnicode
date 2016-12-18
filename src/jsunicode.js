@@ -10,31 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 (function () {
     "use strict";
-    /* Roadmap: For a first pass, the basic functions will be:
-    encode(string, options)
-    decode(bytes, options)
-    countEncodedBytes(string, encoding, byteReader)
-    byteReader.Get(name)
-    byteReader.Register(name, byteReader)
-    byteWriter.Get(name)
-    byteWriter.Register(name, byteReader)
-    
-    Supported encodings will be:
-    UTF-8
-    UTF-16BE
-    UTF-16LE
-    UTF-16 (assumed BE)
-    
-    Supported byte readers/writers will be:
-    hex
-    base64
-    byteArray
 
-    Encode/Decode options:
-    encoding (default UTF-8)
-    byteReader/byteWriter (default hex)
-    throwOnError (default false)
-    */
     var encodings = require("./jsunicode.encodings");
     var utf32 = require("./jsunicode.encoding.utf32");
     var utf16 = require("./jsunicode.encoding.utf16");
@@ -49,8 +25,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     encodings.register("UTF-32BE", utf32);
     encodings.register("UTF-32LE", utf32);
 
+    var countEncodedBytes = function (inpString, encoding) {
+        if (encoding === undefined) {
+            encoding = "UTF-8";
+        }
+
+        var result = encodings.encode(inpString, { encoding: encoding, byteWriter: "count", throwOnError: true });
+
+        return result;
+    };
+
     exports.decode = encodings.decode;
     exports.encode = encodings.encode;
     exports.byteReader = byteReader;
+    exports.countEncodedBytes = countEncodedBytes;
 }());
 
