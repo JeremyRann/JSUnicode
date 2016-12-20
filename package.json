@@ -1,8 +1,8 @@
 {
   "name": "jsunicode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A JavaScript library for encoding/decoding unicode and various other text encoding utilities",
-  "main": "js/jsunicode.js",
+  "main": "src/jsunicode.js",
   "scripts": {
     "build": "npm test && webpack --progress --config webpack.build.config.js",
     "build-min": "npm run build && webpack --progress --config webpack.build-min.config.js",
@@ -15,6 +15,10 @@
   ],
   "author": "Jeremy Rann",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeremyRann/JSUnicode"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.12.0",
