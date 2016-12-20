@@ -78,63 +78,64 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     };
 
     register("base64", function () {
-        var baseReader = byteArrayReader();
+        var inpString;
+        var byteIndex;
+        var charIndex;
+        var buffer;
+        var bufferedByteLength;
 
-        var begin = function (inpStr) {
-            // Instead of trying to pluck a value from the beginning of a base64 string,
-            // we'll instead convert it to a byte array first
-            if (inpStr.length % 4 !== 0) {
+        var begin = function (value) {
+            if (value.length % 4 !== 0) {
                 throw "base64 string length not divisible by 4 (padding is required)";
             }
 
-            var byteLength = (inpStr.length / 4) * 3;
+            inpString = value;
+            buffer = [null, null, null];
+            byteIndex = 0;
+            charIndex = 0;
+            bufferedByteLength = (inpString.length / 4) * 3;
+        };
 
-            if (inpStr[inpStr.length - 2] === "=") {
-                if (inpStr[inpStr.length - 1] !== "=") {
-                    throw "Padding error";
-                }
-
-                byteLength -= 2;
+        var read = function () {
+            if (byteIndex >= bufferedByteLength) {
+                return null;
             }
-            else if (inpStr[inpStr.length - 1] === "=") {
-                byteLength--;
-            }
 
-            var bytes = new Array(byteLength);
-
-            for (var i = 0; i < inpStr.length; i += 4) {
-                var chars = inpStr.substring(i, i + 4).split("");
-                var byteParts = new Array(4);
-
-                for (var j = 0; j < 4; j++) {
-                    if (chars[j] === "=") {
-                        if (j < 2 || i + 4 < inpStr.length) {
+            if (byteIndex % 3 === 0) {
+                var chars = inpString.substr(charIndex, 4);
+                charIndex += 4;
+                var byteParts = [null, null, null, null];
+                for (var i = 0; i < 4; i++) {
+                    if (chars[i] === "=") {
+                        // Padding characters should only be at the end, and if the 2nd to last char is =, the last must be too
+                        if ((byteIndex + 3 < bufferedByteLength || i < 2) || (i === 2 && chars[3] !== "=")) {
                             throw "Unexpected padding character";
                         }
-                        byteParts[j] = null;
+                        else {
+                            bufferedByteLength--;
+                            byteParts[i] = null;
+                        }
                     }
                     else {
-                        byteParts[j] = b64[chars[j]];
-                        if (byteParts[j] === undefined) {
+                        byteParts[i] = b64[chars[i]];
+                        if (byteParts[i] === undefined) {
                             throw "Unrecognized base64 character";
                         }
                     }
                 }
-
-                var byteIndex = (i / 4) * 3;
-                bytes[byteIndex + 0] = (byteParts[0] << 2) + ((byteParts[1] & 0x30) >> 4);
+                buffer[0] = (byteParts[0] << 2) + ((byteParts[1] & 0x30) >> 4);
                 if (byteParts[2] !== null) {
-                    bytes[byteIndex + 1] = ((byteParts[1] & 0xf) << 4) + ((byteParts[2] & 0x3C) >> 2);
+                    buffer[1] = ((byteParts[1] & 0xf) << 4) + ((byteParts[2] & 0x3C) >> 2);
                 }
                 if (byteParts[3] !== null) {
-                    bytes[byteIndex + 2] = ((byteParts[2] & 0x3) << 6) + byteParts[3];
+                    buffer[2] = ((byteParts[2] & 0x3) << 6) + byteParts[3];
                 }
             }
 
-            baseReader.begin(bytes);
+            var currentByte = buffer[byteIndex % 3];
+            byteIndex++;
+            return currentByte;
         };
-
-        var read = baseReader.read;
 
         return {
             begin: begin,
