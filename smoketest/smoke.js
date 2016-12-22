@@ -21,6 +21,6 @@
         smoke(global.$, global.jsunicode);
     }
     else {
-        define(["jquery", "../browser-out/jsunicode.min"], smoke);
+        define(["jquery", "../bin/jsunicode.min"], smoke);
     }
 } (this));

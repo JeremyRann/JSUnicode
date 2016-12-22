@@ -36,10 +36,30 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         return result;
     };
 
+    var convertBytes = function (inpBytes, byteReaderName, byteWriterName, options) {
+        options = options || {};
+        options.byteReaderOptions = options.byteReaderOptions || {};
+        options.byteWriterOptions = options.byteWriterOptions || {};
+
+        var currentByteReader = byteReader.get(byteReaderName, options.byteReaderOptions);
+        var currentByteWriter = byteWriter.get(byteWriterName, options.byteWriterOptions);
+
+        currentByteReader.begin(inpBytes);
+        var currentByte = currentByteReader.read();
+        while (currentByte !== null) {
+            currentByteWriter.write(currentByte);
+            currentByte = currentByteReader.read();
+        }
+
+        return currentByteWriter.finish();
+    };
+
+
     exports.decode = encodings.decode;
     exports.encode = encodings.encode;
     exports.byteReader = byteReader;
     exports.byteWriter = byteWriter;
+    exports.convertBytes = convertBytes;
     exports.countEncodedBytes = countEncodedBytes;
 }());
 

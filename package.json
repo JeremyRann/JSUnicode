@@ -1,7 +1,7 @@
 {
   "name": "jsunicode",
   "version": "1.0.1",
-  "description": "A JavaScript library for encoding/decoding unicode and various other text encoding utilities",
+  "description": "A JavaScript library for encoding/decoding unicode",
   "main": "src/jsunicode.js",
   "scripts": {
     "build": "npm test && webpack --progress --config webpack.build.config.js",

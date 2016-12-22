@@ -40,8 +40,8 @@
     describe("JSUnicode", function() {
         describe("UTF-8", function () {
             it("Encodes a string as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
-                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { throwOnError: true }).toUpperCase();
-                expect(encoded).to.equal("23ED9E99F09F9882C2B124");
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { throwOnError: true });
+                expect(encoded).to.equal("23ed9e99f09f9882c2b124");
             });
             it("Decodes a string encoded as UTF-8 in hex which includes encoded lengths of 1, 2, 3, and 4", function () {
                 var plainText = jsunicode.decode("23ED9E99F09F9882C2B124", { throwOnError: true });
@@ -53,9 +53,9 @@
                 var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
                     encoding: "UTF-16",
                     throwOnError: true
-                }).toUpperCase();
+                });
 
-                expect(encoded).to.equal("0023D799D83DDE0200B10024");
+                expect(encoded).to.equal("0023d799d83dde0200b10024");
             });
             it("Decodes a string encoded as UTF-16 in hex which includes a non-BMP character", function () {
                 var plainText = jsunicode.decode("0023D799D83DDE0200B10024", { encoding: "UTF-16", throwOnError: true });
@@ -65,9 +65,9 @@
                 var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
                     encoding: "UTF-16LE",
                     throwOnError: true
-                }).toUpperCase();
+                });
 
-                expect(encoded).to.equal("230099D73DD802DEB1002400");
+                expect(encoded).to.equal("230099d73dd802deb1002400");
             });
             it("Decodes a string encoded as UTF-16 (Little Endian) in hex which includes a non-BMP character", function () {
                 var plainText = jsunicode.decode("230099D73DD802DEB1002400", { encoding: "UTF-16LE", throwOnError: true });
@@ -79,9 +79,9 @@
                 var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
                     encoding: "UTF-32",
                     throwOnError: true
-                }).toUpperCase();
+                });
 
-                expect(encoded).to.equal("000000230000D7990001F602000000B100000024");
+                expect(encoded).to.equal("000000230000d7990001f602000000b100000024");
             });
             it("Decodes a string encoded as UTF-32 in hex which includes a non-BMP character", function () {
                 var plainText = jsunicode.decode("000000230000D7990001F602000000B100000024", { encoding: "UTF-32", throwOnError: true });
@@ -91,9 +91,9 @@
                 var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
                     encoding: "UTF-32LE",
                     throwOnError: true
-                }).toUpperCase();
+                });
 
-                expect(encoded).to.equal("2300000099D7000002F60100B100000024000000");
+                expect(encoded).to.equal("2300000099d7000002f60100b100000024000000");
             });
             it("Decodes a string encoded as UTF-32 (Little Endian) in hex which includes a non-BMP character", function () {
                 var plainText = jsunicode.decode("2300000099D7000002F60100B100000024000000", { encoding: "UTF-32LE", throwOnError: true });
@@ -146,6 +146,18 @@
                     byteReader: "Uint8Array"
                 })).to.equal("\x23\ud799\ud83d\ude02\u00b1\x24");
                 expect(jsunicode.decode(new Uint8Array([]), { byteReader: "Uint8Array" })).to.equal("");
+            });
+            it("Converts between binary representations", function () {
+                expect(jsunicode.convertBytes([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24],
+                    "byteArray", "hex")).to.equal("23ed9e99f09f9882c2b124");
+            });
+            it("Passes an option to a byteWriter", function () {
+                var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
+                    throwOnError: true, byteWriterOptions: {
+                        upperCase: true
+                    }
+                });
+                expect(encoded).to.equal("23ED9E99F09F9882C2B124");
             });
         });
     });

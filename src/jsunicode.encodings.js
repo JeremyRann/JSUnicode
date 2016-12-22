@@ -92,12 +92,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             throwOnError: false
         }, options || {});
 
+        options.byteWriterOptions = options.byteWriterOptions || {};
+
         var encoding = getEncoding(options.encoding);
         if (encoding === undefined) {
             throw "Unrecognized encoding: " + options.encoding;
         }
 
-        var writer = byteWriter.get(options.byteWriter);
+        var writer = byteWriter.get(options.byteWriter, options.byteWriterOptions);
         if (writer === undefined) {
             throw "Unrecognized byte writer name: " + options.byteWriter;
         }
@@ -121,13 +123,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             byteReader: "hex",
             throwOnError: false
         }, options || {});
+        options.byteReaderOptions = options.byteReaderOptions || {};
 
         var encoding = getEncoding(options.encoding);
         if (getEncoding === undefined) {
             throw "Unrecognized encoding: " + options.encoding;
         }
 
-        var reader = byteReader.get(options.byteReader);
+        var reader = byteReader.get(options.byteReader, options.byteReaderOptions);
         if (reader === undefined) {
             throw "Unrecognized byte reader name: " + options.byteReader;
         }

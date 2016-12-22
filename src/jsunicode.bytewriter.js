@@ -12,13 +12,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function () {
     "use strict";
     var byteWriters = {};
+    var extend = require("extend");
 
     var register = function (name, byteWriter) {
         byteWriters[name] = byteWriter;
     };
 
-    register("hex", function () {
+    register("hex", function (options) {
         var bytes = [];
+        options = extend({}, { upperCase: false }, options);
 
         var write = function (currentByte) {
             if (currentByte === 0) {
@@ -29,6 +31,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                 if (result.length < 2) {
                     result = "0" + result;
                 }
+
+                if (options.upperCase) {
+                    result = result.toUpperCase();
+                }
+                else {
+                    result = result.toLowerCase();
+                }
+
                 bytes.push(result);
             }
         };
@@ -145,10 +155,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         };
     });
 
-    var get = function (name) {
+    var get = function (name, options) {
         var writer = byteWriters[name];
         if (typeof(writer) === "function") {
-            writer = writer();
+            writer = writer(options);
+        }
+        else {
+            writer.options = options;
         }
 
         return {

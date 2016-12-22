@@ -5,7 +5,7 @@ module.exports = {
         "jsunicode": "./src/jsunicode.js",
     },
     output: {
-        path: "browser-out",
+        path: "bin",
         library: "jsunicode",
         libraryTarget: "umd",
         filename: "[name].min.js"
