@@ -8,102 +8,98 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function () {
-    "use strict";
+var encUtil = require("./jsunicode.encoding.utilities");
 
-    var encUtil = require("./jsunicode.encoding.utilities");
+var decode = function (reader, options) {
+    var toe = options.throwOnError;
+    var isLittleEndian = false;
 
-    var decode = function (reader, options) {
-        var toe = options.throwOnError;
-        var isLittleEndian = false;
+    if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
+        isLittleEndian = true;
+    }
 
-        if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
-            isLittleEndian = true;
+    var resultBuilder = [];
+    var firstByte = reader.read();
+    var secondByte = reader.read();
+    var codePoint;
+    var surrogateCodePoint = null;
+    while (firstByte !== null) {
+        if (secondByte === null) {
+            resultBuilder.push(encUtil.errorString("Odd number of bytes in byte stream (must be even for UTF-16)", toe));
         }
-
-        var resultBuilder = [];
-        var firstByte = reader.read();
-        var secondByte = reader.read();
-        var codePoint;
-        var surrogateCodePoint = null;
-        while (firstByte !== null) {
-            if (secondByte === null) {
-                resultBuilder.push(encUtil.errorString("Odd number of bytes in byte stream (must be even for UTF-16)", toe));
-            }
-            if (isLittleEndian) {
-                codePoint = secondByte * 0x100 + firstByte;
-            }
-            else {
-                codePoint = firstByte * 0x100 + secondByte;
-            }
-            if (surrogateCodePoint !== null) {
-                if (codePoint < 0xDC00 || codePoint > 0xDFFF) {
-                    resultBuilder.push(encUtil.errorString("Surrogate code point not found when expected", toe));
-                }
-                else {
-                    resultBuilder.push(encUtil.fromCodePoint(surrogateCodePoint, codePoint));
-                }
-                surrogateCodePoint = null;
-            }
-            else {
-                if (codePoint >= 0xDC00 && codePoint <= 0xDFFF) {
-                    resultBuilder.push(encUtil.errorString("Invalid code point (in high surrogate range)", toe));
-                    surrogateCodePoint = null;
-                }
-                else if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
-                    surrogateCodePoint = codePoint;
-                }
-                else {
-                    resultBuilder.push(encUtil.fromCodePoint(codePoint));
-                    surrogateCodePoint = null;
-                }
-            }
-            firstByte = reader.read();
-            secondByte = reader.read();
+        if (isLittleEndian) {
+            codePoint = secondByte * 0x100 + firstByte;
+        }
+        else {
+            codePoint = firstByte * 0x100 + secondByte;
         }
         if (surrogateCodePoint !== null) {
-            resultBuilder.push(encUtil.errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)", toe));
-        }
-
-        return resultBuilder.join("");
-    };
-
-    var encode = function (codePoints, writer, options) {
-        var isLittleEndian = false;
-
-        if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
-            isLittleEndian = true;
-        }
-
-        var writeTwoBytes = function (number) {
-            if (isLittleEndian) {
-                writer.write(number & 0xff);
-                writer.write((number & 0xff00) >> 8);
+            if (codePoint < 0xDC00 || codePoint > 0xDFFF) {
+                resultBuilder.push(encUtil.errorString("Surrogate code point not found when expected", toe));
             }
             else {
-                writer.write((number & 0xff00) >> 8);
-                writer.write(number & 0xff);
+                resultBuilder.push(encUtil.fromCodePoint(surrogateCodePoint, codePoint));
             }
-        };
-
-        for (var i = 0; i < codePoints.length; i++) {
-            var codePoint = codePoints[i];
-            // We're not going to bother validating code points here; the encoding library should take care of that
-            // for us before we get here
-            if (codePoint < 0x10000) {
-                writeTwoBytes(codePoint);
+            surrogateCodePoint = null;
+        }
+        else {
+            if (codePoint >= 0xDC00 && codePoint <= 0xDFFF) {
+                resultBuilder.push(encUtil.errorString("Invalid code point (in high surrogate range)", toe));
+                surrogateCodePoint = null;
+            }
+            else if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
+                surrogateCodePoint = codePoint;
             }
             else {
-                var basis = codePoint - 0x10000;
-                var highSurrogate = 0xd800 + (basis >> 10);
-                var lowSurrogate = 0xdc00 + (basis & 0x3ff);
-                writeTwoBytes(highSurrogate);
-                writeTwoBytes(lowSurrogate);
+                resultBuilder.push(encUtil.fromCodePoint(codePoint));
+                surrogateCodePoint = null;
             }
+        }
+        firstByte = reader.read();
+        secondByte = reader.read();
+    }
+    if (surrogateCodePoint !== null) {
+        resultBuilder.push(encUtil.errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)", toe));
+    }
+
+    return resultBuilder.join("");
+};
+
+var encode = function (codePoints, writer, options) {
+    var isLittleEndian = false;
+
+    if (options.encoding === "UTF-16LE" || options.isLittleEndian) {
+        isLittleEndian = true;
+    }
+
+    var writeTwoBytes = function (number) {
+        if (isLittleEndian) {
+            writer.write(number & 0xff);
+            writer.write((number & 0xff00) >> 8);
+        }
+        else {
+            writer.write((number & 0xff00) >> 8);
+            writer.write(number & 0xff);
         }
     };
 
-    exports.decode = decode;
-    exports.encode = encode;
-}());
+    for (var i = 0; i < codePoints.length; i++) {
+        var codePoint = codePoints[i];
+        // We're not going to bother validating code points here; the encoding library should take care of that
+        // for us before we get here
+        if (codePoint < 0x10000) {
+            writeTwoBytes(codePoint);
+        }
+        else {
+            var basis = codePoint - 0x10000;
+            var highSurrogate = 0xd800 + (basis >> 10);
+            var lowSurrogate = 0xdc00 + (basis & 0x3ff);
+            writeTwoBytes(highSurrogate);
+            writeTwoBytes(lowSurrogate);
+        }
+    }
+};
+
+exports.decode = decode;
+exports.encode = encode;
 

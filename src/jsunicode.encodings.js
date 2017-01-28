@@ -8,141 +8,143 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function () {
-    "use strict";
-    var extend = require("extend");
-    var byteReader = require("./jsunicode.bytereader");
-    var byteWriter = require("./jsunicode.bytewriter");
-    var encodings = {};
+var jsuError = require("./jsunicode.error.js");
+var extend = require("extend");
+var byteReader = require("./jsunicode.bytereader");
+var byteWriter = require("./jsunicode.bytewriter");
+var encodings = {};
 
-    var registerEncoding = function (encodingName, encoding) {
-        encodings[encodingName] = encoding;
+var registerEncoding = function (encodingName, encoding) {
+    encodings[encodingName] = encoding;
+};
+
+var getEncoding = function (encodingName) {
+    return encodings[encodingName];
+};
+
+// Resolve a JavaScript string into an array of unicode code points
+var getCodePoints = function (inpString, throwOnError) {
+    var result = [];
+    var searchingForSurrogate = false;
+    var highSurrogate = null;
+    var handleError = function (message) {
+        if (throwOnError) {
+            throw new jsuError(message);
+        }
+        else {
+            result.push(0xfffd);
+        }
     };
 
-    var getEncoding = function (encodingName) {
-        return encodings[encodingName];
-    };
-
-    // Resolve a JavaScript string into an array of unicode code points
-    var getCodePoints = function (inpString, throwOnError) {
-        var result = [];
-        var searchingForSurrogate = false;
-        var highSurrogate = null;
-        var handleError = function (message) {
-            if (throwOnError) {
-                throw message;
-            }
-            else {
+    for (var i = 0; i < inpString.length; i++) {
+        var currentPoint = inpString.charCodeAt(i);
+        // currentPoint < 0? Probably not possible, but covering bases anyway
+        if (currentPoint > 0xffff || currentPoint < 0) {
+            handleError("String contains invalid character data");
+            // If we're looking for a low surrogate, we now have two errors; one for the missing pair,
+            // and one for the strange found character
+            if (searchingForSurrogate) {
                 result.push(0xfffd);
+                searchingForSurrogate = false;
             }
-        };
-
-        for (var i = 0; i < inpString.length; i++) {
-            var currentPoint = inpString.charCodeAt(i);
-            // currentPoint < 0? Probably not possible, but covering bases anyway
-            if (currentPoint > 0xffff || currentPoint < 0) {
-                handleError("String contains invalid character data");
-                // If we're looking for a low surrogate, we now have two errors; one for the missing pair,
-                // and one for the strange found character
-                if (searchingForSurrogate) {
-                    result.push(0xfffd);
-                    searchingForSurrogate = false;
-                }
+        }
+        else if (currentPoint <= 0xd7ff || currentPoint >= 0xE000) {
+            if (searchingForSurrogate === true) {
+                handleError("Unmatched surrogate pair in string");
+                searchingForSurrogate = false;
             }
-            else if (currentPoint <= 0xd7ff || currentPoint >= 0xE000) {
-                if (searchingForSurrogate === true) {
-                    handleError("Unmatched surrogate pair in string");
-                    searchingForSurrogate = false;
-                }
-                result.push(currentPoint);
-            }
-            else {
-                if (searchingForSurrogate) {
-                    if (currentPoint < 0xdc00) {
-                        handleError("Low surrogate value not valid");
-                    }
-                    else {
-                        result.push((0x10000 + ((highSurrogate - 0xd800) << 10) + currentPoint - 0xdc00));
-                    }
-                    searchingForSurrogate = false;
+            result.push(currentPoint);
+        }
+        else {
+            if (searchingForSurrogate) {
+                if (currentPoint < 0xdc00) {
+                    handleError("Low surrogate value not valid");
                 }
                 else {
-                    if (currentPoint >= 0xdc00) {
-                        handleError("Unexpected high surrogate found");
-                    }
-                    else {
-                        searchingForSurrogate = true;
-                        highSurrogate = currentPoint;
-                    }
+                    result.push((0x10000 + ((highSurrogate - 0xd800) << 10) + currentPoint - 0xdc00));
+                }
+                searchingForSurrogate = false;
+            }
+            else {
+                if (currentPoint >= 0xdc00) {
+                    handleError("Unexpected high surrogate found");
+                }
+                else {
+                    searchingForSurrogate = true;
+                    highSurrogate = currentPoint;
                 }
             }
         }
+    }
 
-        return result;
-    };
+    if (searchingForSurrogate) {
+        handleError("Unexpected end of string (unmatched surrogate pair)");
+    }
 
-    var encode = function (inpString, options) {
-        if (inpString === null || inpString === undefined) {
-            return inpString;
-        }
+    return result;
+};
 
-        options = extend({}, {
-            encoding: "UTF-8",
-            byteWriter: "hex",
-            throwOnError: false
-        }, options || {});
+var encode = function (inpString, options) {
+    options = extend({}, {
+        encoding: "UTF-8",
+        byteWriter: "hex",
+        throwOnError: false
+    }, options || {});
 
-        options.byteWriterOptions = options.byteWriterOptions || {};
+    options.byteWriterOptions = options.byteWriterOptions || {};
 
-        var encoding = getEncoding(options.encoding);
-        if (encoding === undefined) {
-            throw "Unrecognized encoding: " + options.encoding;
-        }
+    var encoding = getEncoding(options.encoding);
+    if (encoding === undefined) {
+        throw new jsuError("Unrecognized encoding: " + options.encoding);
+    }
 
-        var writer = byteWriter.get(options.byteWriter, options.byteWriterOptions);
-        if (writer === undefined) {
-            throw "Unrecognized byte writer name: " + options.byteWriter;
-        }
+    var writer = byteWriter.get(options.byteWriter, options.byteWriterOptions);
+    if (writer === undefined) {
+        throw new jsuError("Unrecognized byte writer name: " + options.byteWriter);
+    }
 
-        var codePoints = getCodePoints(inpString, options.throwOnError);
+    if (inpString === null || inpString === undefined) {
+        return inpString;
+    }
 
-        encoding.encode(codePoints, writer, options);
+    var codePoints = getCodePoints(inpString, options.throwOnError);
 
-        var result = writer.finish();
+    encoding.encode(codePoints, writer, options);
 
-        return result;
-    };
+    var result = writer.finish();
 
-    var decode = function (inpBytes, options) {
-        if (inpBytes === null || inpBytes === undefined) {
-            return inpBytes;
-        }
+    return result;
+};
 
-        options = extend({}, {
-            encoding: "UTF-8",
-            byteReader: "hex",
-            throwOnError: false
-        }, options || {});
-        options.byteReaderOptions = options.byteReaderOptions || {};
+var decode = function (inpBytes, options) {
+    options = extend({}, {
+        encoding: "UTF-8",
+        byteReader: "hex",
+        throwOnError: false
+    }, options || {});
+    options.byteReaderOptions = options.byteReaderOptions || {};
 
-        var encoding = getEncoding(options.encoding);
-        if (getEncoding === undefined) {
-            throw "Unrecognized encoding: " + options.encoding;
-        }
+    var encoding = getEncoding(options.encoding);
+    if (encoding === undefined) {
+        throw new jsuError("Unrecognized encoding: " + options.encoding);
+    }
 
-        var reader = byteReader.get(options.byteReader, options.byteReaderOptions);
-        if (reader === undefined) {
-            throw "Unrecognized byte reader name: " + options.byteReader;
-        }
+    var reader = byteReader.get(options.byteReader, options.byteReaderOptions);
+    if (reader === undefined) {
+        throw new jsuError("Unrecognized byte reader name: " + options.byteReader);
+    }
 
-        reader.begin(inpBytes);
-        var result = encoding.decode(reader, options);
-        return result;
-    };
+    if (inpBytes === null || inpBytes === undefined) {
+        return inpBytes;
+    }
 
-    exports.register = registerEncoding;
-    exports.get = getEncoding;
-    exports.decode = decode;
-    exports.encode = encode;
-}());
+    reader.begin(inpBytes);
+    var result = encoding.decode(reader, options);
+    return result;
+};
+
+exports.register = registerEncoding;
+exports.get = getEncoding;
+exports.decode = decode;
+exports.encode = encode;
 

@@ -96,7 +96,7 @@ jsunicode.decode("AEEAbgAgAGUAbQBvAGoAaQA6ACDYPd4C", { encoding: "UTF-16", byteR
 // An emoji: 😂
 ```
 ### Binary Formats
-JavaScript has no universally agreed-on format for storing binary data, so JSUnicode is designed to be modular, supporting a few default binary formats and providing developers the ability to build new ones as needed. When encoding JavaScript, a byteWriter is needed to output the encoded binary, and when decoding JavaScript a byteReader is needed to provide the input.
+JavaScript has no universally agreed-on format for storing binary data, so JSUnicode is designed to be modular, supporting a few default binary formats and providing developers the ability to build new ones as needed. When encoding Unicode, a byteWriter is needed to output the encoded binary, and when decoding Unicode a byteReader is needed to provide the input.
 ### Registering byteWriters
 It is possible to create your own byteWriter for use with JSUnicode. A byteWriter is an object that will have two methods; one named "write" which accepts one parameter (a number between 0 and 255), and another named "finish" which returns the finished binary collection. You can register either an object which will be the byteWriter or a function which will build your byteWriter. Your function will take a byteWriterOptions object, or if you register an object the object will have an options member set when the writer is retrieved. Note that this means your registered object probably shouldn't already have a member called "options", since JSUnicode will overwrite it. To allow JSUnicode to use your byteWriter, register it using the jsunicode.byteWriter.register function:
 ```javascript

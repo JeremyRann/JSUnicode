@@ -8,58 +8,56 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function () {
-    "use strict";
+var encodings = require("./jsunicode.encodings");
+var utf32 = require("./jsunicode.encoding.utf32");
+var utf16 = require("./jsunicode.encoding.utf16");
+var utf8 = require("./jsunicode.encoding.utf8");
+var byteReader = require("./jsunicode.bytereader");
+var byteWriter = require("./jsunicode.bytewriter");
+var jsunicodeError = require("./jsunicode.error");
 
-    var encodings = require("./jsunicode.encodings");
-    var utf32 = require("./jsunicode.encoding.utf32");
-    var utf16 = require("./jsunicode.encoding.utf16");
-    var utf8 = require("./jsunicode.encoding.utf8");
-    var byteReader = require("./jsunicode.bytereader");
-    var byteWriter = require("./jsunicode.bytewriter");
+encodings.register("UTF-8", utf8);
+encodings.register("UTF-16", utf16);
+encodings.register("UTF-16BE", utf16);
+encodings.register("UTF-16LE", utf16);
+encodings.register("UTF-32", utf32);
+encodings.register("UTF-32BE", utf32);
+encodings.register("UTF-32LE", utf32);
 
-    encodings.register("UTF-8", utf8);
-    encodings.register("UTF-16", utf16);
-    encodings.register("UTF-16BE", utf16);
-    encodings.register("UTF-16LE", utf16);
-    encodings.register("UTF-32", utf32);
-    encodings.register("UTF-32BE", utf32);
-    encodings.register("UTF-32LE", utf32);
+var countEncodedBytes = function (inpString, encoding) {
+    if (encoding === undefined) {
+        encoding = "UTF-8";
+    }
 
-    var countEncodedBytes = function (inpString, encoding) {
-        if (encoding === undefined) {
-            encoding = "UTF-8";
-        }
+    var result = encodings.encode(inpString, { encoding: encoding, byteWriter: "count", throwOnError: true });
 
-        var result = encodings.encode(inpString, { encoding: encoding, byteWriter: "count", throwOnError: true });
+    return result;
+};
 
-        return result;
-    };
+var convertBytes = function (inpBytes, byteReaderName, byteWriterName, options) {
+    options = options || {};
+    options.byteReaderOptions = options.byteReaderOptions || {};
+    options.byteWriterOptions = options.byteWriterOptions || {};
 
-    var convertBytes = function (inpBytes, byteReaderName, byteWriterName, options) {
-        options = options || {};
-        options.byteReaderOptions = options.byteReaderOptions || {};
-        options.byteWriterOptions = options.byteWriterOptions || {};
+    var currentByteReader = byteReader.get(byteReaderName, options.byteReaderOptions);
+    var currentByteWriter = byteWriter.get(byteWriterName, options.byteWriterOptions);
 
-        var currentByteReader = byteReader.get(byteReaderName, options.byteReaderOptions);
-        var currentByteWriter = byteWriter.get(byteWriterName, options.byteWriterOptions);
+    currentByteReader.begin(inpBytes);
+    var currentByte = currentByteReader.read();
+    while (currentByte !== null) {
+        currentByteWriter.write(currentByte);
+        currentByte = currentByteReader.read();
+    }
 
-        currentByteReader.begin(inpBytes);
-        var currentByte = currentByteReader.read();
-        while (currentByte !== null) {
-            currentByteWriter.write(currentByte);
-            currentByte = currentByteReader.read();
-        }
-
-        return currentByteWriter.finish();
-    };
+    return currentByteWriter.finish();
+};
 
 
-    exports.decode = encodings.decode;
-    exports.encode = encodings.encode;
-    exports.byteReader = byteReader;
-    exports.byteWriter = byteWriter;
-    exports.convertBytes = convertBytes;
-    exports.countEncodedBytes = countEncodedBytes;
-}());
+exports.decode = encodings.decode;
+exports.encode = encodings.encode;
+exports.byteReader = byteReader;
+exports.byteWriter = byteWriter;
+exports.convertBytes = convertBytes;
+exports.countEncodedBytes = countEncodedBytes;
+exports.jsunicodeError = jsunicodeError;
 

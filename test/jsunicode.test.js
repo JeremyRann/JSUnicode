@@ -160,6 +160,103 @@
                 expect(encoded).to.equal("23ED9E99F09F9882C2B124");
             });
         });
+        describe("Error handling", function () {
+            var jsuError = jsunicode.jsunicodeError;
+            it("Throws when invalid byteReader settings are specified", function () {
+                expect(function () {
+                    jsunicode.decode(null, { encoding: "bogus" });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode(null, { byteReader: "bogus" });
+                }).to.throw(jsuError);
+            });
+            it("Throws when invalid byteWriter settings are specified", function () {
+                expect(function () {
+                    jsunicode.encode(null, { encoding: "bogus" });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.encode(null, { byteWriter: "bogus" });
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid hex decoding", function () {
+                expect(function () {
+                    var reader = jsunicode.byteReader.get("hex");
+                    reader.begin("010");
+                }).to.throw(jsuError);
+                expect(function () {
+                    var reader = jsunicode.byteReader.get("hex");
+                    reader.begin("zz");
+                    reader.read();
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid base64 decoding", function () {
+                expect(function () {
+                    jsunicode.decode("ab", { byteReader: "base64" });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("a=bb", { byteReader: "base64" });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("~123", { byteReader: "base64" });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("eda0bd", { throwOnError: true, allowEncodedSurrogatePair: true });
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid byte in binary input", function () {
+                expect(function () {
+                    var writer = jsunicode.byteWriter.get("hex");
+                    writer.write(256);
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid UTF-8 decoding", function () {
+                expect(function () {
+                    jsunicode.decode("ff", { throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("e0", { throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("e0e0", { throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("f58fbfbf", { throwOnError: true });
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid UTF-16 decoding", function () {
+                expect(function () {
+                    jsunicode.decode("01", { encoding: "UTF-16", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("d83d0001", { encoding: "UTF-16", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("d83d", { encoding: "UTF-16", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.decode("dc00", { encoding: "UTF-16", throwOnError: true });
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid UTF-32 decoding", function () {
+                expect(function () {
+                    jsunicode.decode("01", { encoding: "UTF-32", throwOnError: true });
+                }).to.throw(jsuError);
+            });
+            it("Throws on invalid strings during encoding", function () {
+                expect(function () {
+                    jsunicode.encode("\ud800 ", { encoding: "UTF-8", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.encode("\ud800", { encoding: "UTF-8", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.encode("\ud800\ud800", { encoding: "UTF-8", throwOnError: true });
+                }).to.throw(jsuError);
+                expect(function () {
+                    jsunicode.encode("\udc00", { encoding: "UTF-8", throwOnError: true });
+                }).to.throw(jsuError);
+            });
+        });
     });
 }(this));
 
