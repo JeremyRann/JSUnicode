@@ -17,7 +17,7 @@ JSUnicode is a Unicode library for JavaScript, allowing users to encode/decode U
 
 ## Getting Started
 ### In a browser
-The simplest way to use JSUnicode in a browser is to download the minified release at [https://github.com/JeremyRann/JSUnicode/releases] (the file will be called "jsunicode.min.js"), then include it in a script tag:
+The simplest way to use JSUnicode in a browser is to download the minified release at [https://github.com/JeremyRann/JSUnicode/releases](https://github.com/JeremyRann/JSUnicode/releases) (the file will be called "jsunicode.min.js"), then include it in a script tag:
 ```html
 <script type="text/javascript" src="jsunicode.min.js"></script>
 ```
