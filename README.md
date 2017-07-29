@@ -1,5 +1,6 @@
 # JSUnicode
 JSUnicode is a Unicode library for JavaScript, allowing users to encode/decode UTF-8, UTF-16, and UTF-32. The implementation complies with the Unicode specification and works with characters in supplementary code point ranges such as emoji (which can be troublesome in some other Unicode implementations).
+
 ## Table of Contents
 * [Getting Started](#getting-started)
     * [In a browser](#in-a-browser)
@@ -26,6 +27,7 @@ This will create a global object called "jsunicode". You can also use JSUnicode 
 require(["jsunicode.min"], function (jsunicode) { /*...*/ });
 ```
 JSunicode uses [Webpack's](https://webpack.github.io/) UMD output, so the script will intelligently decide to create a global object or rely on AMD depending on the context.
+
 ### In [node.js](http://nodejs.org/)
 You can use NPM to install the latest release of JSUnicode:
 ```
@@ -35,6 +37,7 @@ Then you can reference jsunicode as you would any other node dependency:
 ```javascript
 var jsunicode = require("jsunicode");
 ```
+
 ## Usage
 ### Couting bytes
 Once you have a jsunicode object, you can count encoded bytes with:
@@ -46,6 +49,7 @@ Where inpString is the string you want to count and encoding is an optional stri
 jsunicode.countEncodedBytes("\ud799"); // Returns 3 for UTF-8 encoding
 jsunicode.countEncodedBytes("\ud799", "UTF-16"); // Returns 2 for UTF-16 encoding
 ```
+
 ### Encoding
 The jsunicode object has an encode function:
 ```javascript
@@ -74,6 +78,7 @@ For example, to encode a string in UTF-16 using base64 as the output:
 jsunicode.encode("An emoji: \ud83d\ude02", { encoding: "UTF-16", byteWriter: "base64" });
 // "AEEAbgAgAGUAbQBvAGoAaQA6ACDYPd4C"
 ```
+
 ### Decoding
 To decode:
 ```javascript
@@ -95,14 +100,17 @@ For example, to decode the above encoding example:
 jsunicode.decode("AEEAbgAgAGUAbQBvAGoAaQA6ACDYPd4C", { encoding: "UTF-16", byteReader: "base64" });
 // An emoji: 😂
 ```
+
 ### Binary Formats
 JavaScript has no universally agreed-on format for storing binary data, so JSUnicode is designed to be modular, supporting a few default binary formats and providing developers the ability to build new ones as needed. When encoding Unicode, a byteWriter is needed to output the encoded binary, and when decoding Unicode a byteReader is needed to provide the input.
+
 ### Registering byteWriters
 It is possible to create your own byteWriter for use with JSUnicode. A byteWriter is an object that will have two methods; one named "write" which accepts one parameter (a number between 0 and 255), and another named "finish" which returns the finished binary collection. You can register either an object which will be the byteWriter or a function which will build your byteWriter. Your function will take a byteWriterOptions object, or if you register an object the object will have an options member set when the writer is retrieved. Note that this means your registered object probably shouldn't already have a member called "options", since JSUnicode will overwrite it. To allow JSUnicode to use your byteWriter, register it using the jsunicode.byteWriter.register function:
 ```javascript
 jsunicode.byteWriter.register([name], [byteWriter]);
 ```
 You can then specify your byteWriter name when encoding  to instruct jsunicode to use your byteWriter. You can of course browse the source code to see how the built-in byteWriters work.
+
 ### Retrieving existing byteWriters
 You can see a list of which byteWriters are available at runtime with the byteWriter.list() function:
 ```javascript
@@ -113,12 +121,14 @@ This returns an array of all byteWriter names. If you want to use a byteWriter i
 jsunicode.byteWriter.get([name], [options]);
 ```
 Where options is an optional argument.
+
 ### Registering byteReaders
 In much the same way as byteWriters, you can register your own byteReaders with jsunicode if you need to decode from a binary format which is not supported by default. A byteReader will have two functions; "begin" which accepts one parameter (the encoded binary in your custom format), and "read" which returns one byte when requested or returns null when there are no more bytes. You can register either a function which takes an options argument and produces a byteReader, or you can register an object which will have its options member set/overwritten. This is done with the jsunicode.byteReader.register function:
 ```javascript
 jsunicode.byteReader.register([name], [byteReader]);
 ```
 You can then specify your new byteReader name when decoding.
+
 ### Retrieving existing byteReaders
 To list existing byteReaders, use:
 ```javascript
@@ -129,6 +139,7 @@ Which returns an array of byteReader names. You can get a byteReader for your ow
 jsunicode.byteReader.get([name], [options]);
 ```
 Where, as with the byteWriter, the options argument is optional.
+
 ### Converting between binary representations
 It may also sometimes be handy to convert between binary representations, so jsunicode provides the convertBytes function:
 ```javascript

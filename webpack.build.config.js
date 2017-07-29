@@ -1,9 +1,11 @@
+const path = require("path");
+
 module.exports = {
     entry: {
         "jsunicode": "./src/jsunicode.js",
     },
     output: {
-        path: "bin",
+        path: path.resolve(__dirname, "bin"),
         library: "jsunicode",
         libraryTarget: "umd",
         filename: "[name].js"

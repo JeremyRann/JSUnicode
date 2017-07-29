@@ -1,3 +1,4 @@
+const path = require("path");
 var webpack = require("webpack");
 
 module.exports = {
@@ -5,7 +6,7 @@ module.exports = {
         "jsunicode": "./src/jsunicode.js",
     },
     output: {
-        path: "bin",
+        path: path.resolve(__dirname, "bin"),
         library: "jsunicode",
         libraryTarget: "umd",
         filename: "[name].min.js"

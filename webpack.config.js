@@ -1,12 +1,12 @@
+const path = require("path");
+
 module.exports = {
     entry: {
         "jsunicode.browser-demo": "./bundle/jsunicode.browser-demo.js"
     },
     output: {
-        path: "bundle-out",
+        path: path.resolve(__dirname, "bundle-out"),
         publicPath: "dev-bin",
-        //library: "jsunicode",
-        //libraryTarget: "umd",
         filename: "[name].js"
     },
     module: {
