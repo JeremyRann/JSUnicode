@@ -1,9 +1,17 @@
 var test = require("tape-catch");
-//require("tape-dom")(test);
-var tapeworm = require("tape-worm");
+var isNode = require("detect-node");
 var jsunicode = require("../src/jsunicode");
 
-tapeworm.infect(test);
+if (isNode) {
+    var tapSpec = require("tap-spec");
+    test.createStream()
+        .pipe(tapSpec())
+        .pipe(process.stdout);
+}
+else {
+    var tapeworm = require("tape-worm");
+    tapeworm.infect(test);
+}
 
 /* I find C# to have a useful reference implementation of unicode. Here's some example code for encode/decode:
     var sourceString = "\x23\ud799\U0001f602\u00b1\x24";
