@@ -1,0 +1,55 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>JSUnicode browser demo</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="jsunicode.browser.demo.js"></script>
+        <style type="text/css">
+            body.not-loaded .loaded,
+            body.loaded .not-loaded,
+            body.test .demo {
+                display: none;
+            }
+
+            button, form {
+                margin: 0.5em;
+            }
+        </style>
+    </head>
+
+    <body class="not-loaded">
+        <pre style="display:none" class="error"></pre>
+        <div class="not-loaded">
+            <a href="index.html?load=dynamic">Demo page with webpack-dev-server JSUnicode</a>
+            <br />
+            <a href="index.html?load=static">Demo page with built JSUnicode</a>
+            <br />
+            <a href="index.html?load=test">TAPE tests</a>
+        </div>
+        <div class="loaded">
+            <a href="index.html">Back to main page</a>
+            <form class="demo">
+                <select id="textEncoding">
+                    <option>UTF-8</option>
+                    <option>UTF-16</option>
+                    <option>UTF-16LE</option>
+                    <option>UTF-32</option>
+                    <option>UTF-32LE</option>
+                </select>
+                <div>
+                    <input type="text" id="encodeText" />
+                    <button type="button" id="encode">Encode</button>
+                    <select id="byteWriter"></select>
+                </div>
+                <div>
+                    <input type="text" id="decodeText" />
+                    <button type="button" id="decode">Decode</button>
+                    <select id="byteReader"></select>
+                </div>
+            </form>
+            <pre id="output">
+            </pre>
+        </div>
+    </body>
+</html>
