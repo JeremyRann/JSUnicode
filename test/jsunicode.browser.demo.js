@@ -40,9 +40,16 @@ $(document).ready(function () {
     $("#decode").click(function () {
         $("pre.error").hide();
         try {
-            var result = jsunicode.decode($("#decodeText").val(), {
+            var inpVal = $("#decodeText").val();
+            var byteReader = $("#byteReader").val();
+            // Take a guess at whether we need to JSON parse or not
+            // TODO: Add property to byteReader object to help here (probably need fromString/toString)
+            if (!(byteReader === "hex" || byteReader === "base64")) {
+                inpVal = JSON.parse(inpVal);
+            }
+            var result = jsunicode.decode(inpVal, {
                 encoding: $("#textEncoding").val(),
-                byteReader: $("#byteReader").val()
+                byteReader: byteReader
             });
             $("#encodeText").val(result);
             $("#output").text(result);
@@ -64,6 +71,10 @@ $(document).ready(function () {
                 encoding: $("#textEncoding").val(),
                 byteWriter: $("#byteWriter").val()
             });
+            // TODO: Ensure byteWriters support toString
+            if (typeof(result) !== "string") {
+                result = JSON.stringify(result);
+            }
             $("#decodeText").val(result);
             $("#output").text(result);
         } catch (err) {
