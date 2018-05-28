@@ -25,10 +25,10 @@
   * [list](#writer_list)
 
 <a name="core"></a>
-##Core API
+## Core API
 
 <a name="encode"></a>
-###encode
+### encode
 
 Encodes a JavaScript string into a binary value
 
@@ -64,7 +64,7 @@ jsunicode.encode("An emoji: \ud83d\ude02", {
 ```
 
 <a name="decode"></a>
-###decode
+### decode
 
 Decodes a binary value into a JavaScript string
 
@@ -88,7 +88,7 @@ jsunicode.decode("AEEAbgAgAGUAbQBvAGoAaQA6ACDYPd4C", {
 ```
 
 <a name="countencodedbytes"></a>
-###countEncodedBytes
+### countEncodedBytes
 
 Determines how many bytes a JavaScript string would require to encode as binary
 
@@ -102,7 +102,7 @@ jsunicode.countEncodedBytes("\ud799", jsunicode.constants.encoding.utf16); // Re
 ```
 
 <a name="convertbytes"></a>
-###convertBytes
+### convertBytes
 
 Converts between binary representations
 
@@ -112,53 +112,53 @@ jsunicode.convertBytes([inpBytes], [byteReaderName], [byteWriterName], [options]
 Where inpBytes is the binary format you which to convert, byteReaderName specifies the format of inpBytes, byteWriterName specifies the destination format, and options is an optional object with a byteReaderOptions member and a byteWriterOptions member to provide additional options if needed.
 
 <a name="constants"></a>
-###constants
+### constants
 
 A constants object is provided on the jsunicode object for convenience. Using the constants object ensures that you can more easily find references to particular encodings or binaryFormats in your code base for example, but there is no reason to expect that the actual string values of any of these constants will change in a future version of JSUnicode, so if you prefer to use string literals instead of references to this object, it should be perfectly safe.
 
 <a name="jsunicodeerror"></a>
-###jsunicodeError
+### jsunicodeError
 
 Encoding errors are generally thrown as instances of `jsunicodeError`; any other error type thrown by JSUnicode generally indicates a bug or an incorrect invocation of JSUnicode.
 
 <a name="bytereaderapi"></a>
-##Byte Reader API
+## Byte Reader API
 
 <a name="reader_registerfactory"></a>
-###registerFactory
+### registerFactory
 
 <a name="reader_registerprototype"></a>
-###registerPrototype
+### registerPrototype
 
 <a name="reader_register"></a>
-###register (deprecated)
+### register (deprecated)
 
 <a name="reader_unregister"></a>
-###unregister
+### unregister
 
 <a name="reader_get"></a>
-###get
+### get
 
 <a name="reader_list"></a>
-###list
+### list
 
 <a name="bytewriterapi"></a>
-##Byte Writer API
+## Byte Writer API
 
 <a name="writer_registerfactory"></a>
-###registerFactory
+### registerFactory
 
 <a name="writer_registerprototype"></a>
-###registerPrototype
+### registerPrototype
 
 <a name="writer_register"></a>
-###register (deprecated)
+### register (deprecated)
 
 <a name="writer_unregister"></a>
-###unregister
+### unregister
 
 <a name="writer_get"></a>
-###get
+### get
 
 <a name="writer_list"></a>
-###list
+### list
