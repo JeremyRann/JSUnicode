@@ -30,7 +30,11 @@ module.exports = function (env) {
         },
         node: {
             fs: "empty",
-            Buffer: false
+            // This probably bears more research; if Buffer is true or unset here, webpack will bundle a
+            // buffer shim with JSUnicode's build for no reason. However if it's false, the test package
+            // fails (it seems like tape-catch is the issue). Since we only need the test package in dev
+            // mode, we'll use the environment variable for now so builds are small but dev mode works.
+            Buffer: (env === "dev")
         },
         /* webpack-dev-server is currently in "maintenance-only mode", and the docs
          * suggest webpack-serve instead; unforunately, webpack-serve has terrible
