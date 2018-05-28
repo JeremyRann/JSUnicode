@@ -19,7 +19,8 @@ module.exports = function (env) {
         output: {
             filename: "[name].js",
             libraryTarget: "umd",
-            library: "jsunicode"
+            library: "jsunicode",
+            globalObject: "this"
         },
         module: {
             rules: [{
