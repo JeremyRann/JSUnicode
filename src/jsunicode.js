@@ -15,21 +15,26 @@ var utf8 = require("./jsunicode.encoding.utf8");
 var byteReader = require("./jsunicode.bytereader");
 var byteWriter = require("./jsunicode.bytewriter");
 var jsunicodeError = require("./jsunicode.error");
+var constants = require("./jsunicode.constants");
 
-encodings.register("UTF-8", utf8);
-encodings.register("UTF-16", utf16);
-encodings.register("UTF-16BE", utf16);
-encodings.register("UTF-16LE", utf16);
-encodings.register("UTF-32", utf32);
-encodings.register("UTF-32BE", utf32);
-encodings.register("UTF-32LE", utf32);
+encodings.register(constants.encoding.utf8, utf8);
+encodings.register(constants.encoding.utf16, utf16);
+encodings.register(constants.encoding.utf16be, utf16);
+encodings.register(constants.encoding.utf16le, utf16);
+encodings.register(constants.encoding.utf32, utf32);
+encodings.register(constants.encoding.utf32be, utf32);
+encodings.register(constants.encoding.utf32le, utf32);
 
 var countEncodedBytes = function (inpString, encoding) {
     if (encoding === undefined) {
-        encoding = "UTF-8";
+        encoding = constants.encoding.utf8;
     }
 
-    var result = encodings.encode(inpString, { encoding: encoding, byteWriter: "count", throwOnError: true });
+    var result = encodings.encode(inpString, {
+        encoding: encoding,
+        byteWriter: constants.binaryFormat.count,
+        throwOnError: true
+    });
 
     return result;
 };
@@ -52,7 +57,7 @@ var convertBytes = function (inpBytes, byteReaderName, byteWriterName, options) 
     return currentByteWriter.finish();
 };
 
-
+exports.constants = constants;
 exports.decode = encodings.decode;
 exports.encode = encodings.encode;
 exports.byteReader = byteReader;

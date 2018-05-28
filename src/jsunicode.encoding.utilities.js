@@ -10,6 +10,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 var jsuError = require("./jsunicode.error");
 
+var validateCodePoint = function (codePoint) {
+    if (codePoint < 0) {
+        return false;
+    }
+    else if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
+        return false;
+    }
+    else if (codePoint > 0x10ffff) {
+        return false;
+    }
+
+    return true;
+};
+
 // This polyfill is necessary for browsers without String.fromCodePoint (sigh)
 // I suppose I could just use the fromCharCode option always, but I'm a bit worried that
 // at some point a JavaScript implementation will complain that fromCharCode is nonsense
@@ -44,17 +58,6 @@ var fromCodePoint = function (highSurrogate, lowSurrogate) {
             return String.fromCharCode(highSurrogate) + String.fromCharCode(lowSurrogate);
         }
     }
-};
-
-var validateCodePoint = function (codePoint) {
-    if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
-        return false;
-    }
-    else if (codePoint > 0x10ffff) {
-        return false;
-    }
-
-    return true;
 };
 
 var errorString = function (err, throwOnError) {

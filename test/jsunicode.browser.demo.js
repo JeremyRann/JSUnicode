@@ -40,16 +40,13 @@ $(document).ready(function () {
     $("#decode").click(function () {
         $("pre.error").hide();
         try {
-            var inpVal = $("#decodeText").val();
-            var byteReader = $("#byteReader").val();
-            // Take a guess at whether we need to JSON parse or not
-            // TODO: Add property to byteReader object to help here (probably need fromString/toString)
-            if (!(byteReader === "hex" || byteReader === "base64")) {
-                inpVal = JSON.parse(inpVal);
-            }
+            var byteReaderName = $("#byteReader").val();
+            var byteReader = jsunicode.byteReader.get(byteReaderName);
+            var inpVal = byteReader.deserialize($("#decodeText").val());
+
             var result = jsunicode.decode(inpVal, {
                 encoding: $("#textEncoding").val(),
-                byteReader: byteReader
+                byteReader: byteReaderName
             });
             $("#encodeText").val(result);
             $("#output").text(result);
@@ -67,14 +64,14 @@ $(document).ready(function () {
     $("#encode").click(function () {
         $("pre.error").hide();
         try {
-            var result = jsunicode.encode($("#encodeText").val(), {
+            var byteWriterName = $("#byteWriter").val();
+            var byteWriter = jsunicode.byteWriter.get(byteWriterName);
+
+            var resultBin = jsunicode.encode($("#encodeText").val(), {
                 encoding: $("#textEncoding").val(),
-                byteWriter: $("#byteWriter").val()
+                byteWriter: byteWriterName
             });
-            // TODO: Ensure byteWriters support toString
-            if (typeof(result) !== "string") {
-                result = JSON.stringify(result);
-            }
+            var result = byteWriter.serialize(resultBin);
             $("#decodeText").val(result);
             $("#output").text(result);
         } catch (err) {

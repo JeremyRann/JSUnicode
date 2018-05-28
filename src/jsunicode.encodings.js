@@ -9,9 +9,9 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 var jsuError = require("./jsunicode.error.js");
-var extend = require("extend");
 var byteReader = require("./jsunicode.bytereader");
 var byteWriter = require("./jsunicode.bytewriter");
+var constants = require("./jsunicode.constants");
 var encodings = {};
 
 var registerEncoding = function (encodingName, encoding) {
@@ -85,13 +85,16 @@ var getCodePoints = function (inpString, throwOnError) {
 };
 
 var encode = function (inpString, options) {
-    options = extend({}, {
-        encoding: "UTF-8",
-        byteWriter: "hex",
-        throwOnError: false
-    }, options || {});
-
-    options.byteWriterOptions = options.byteWriterOptions || {};
+    if (inpString !== null && typeof(inpString) !== "string") {
+        throw new Error("Invalid data type (expected type of string");
+    }
+    if (!options) { options = {}; }
+    options = {
+        encoding: options.encoding || constants.encoding.utf8,
+        byteWriter: options.byteWriter || constants.binaryFormat.hex,
+        throwOnError: options.throwOnError || false,
+        byteWriterOptions: options.byteWriterOptions || {}
+    };
 
     var encoding = getEncoding(options.encoding);
     if (encoding === undefined) {
@@ -117,12 +120,13 @@ var encode = function (inpString, options) {
 };
 
 var decode = function (inpBytes, options) {
-    options = extend({}, {
-        encoding: "UTF-8",
-        byteReader: "hex",
-        throwOnError: false
-    }, options || {});
-    options.byteReaderOptions = options.byteReaderOptions || {};
+    if (!options) { options = {}; }
+    options = {
+        encoding: options.encoding || constants.encoding.utf8,
+        byteReader: options.byteReader || constants.binaryFormat.hex,
+        throwOnError: options.throwOnError || false,
+        byteReaderOptions: options.byteReaderOptions || {}
+    };
 
     var encoding = getEncoding(options.encoding);
     if (encoding === undefined) {

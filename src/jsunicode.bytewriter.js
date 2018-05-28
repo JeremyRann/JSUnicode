@@ -8,18 +8,42 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-/* global Uint8Array */
+/* global Uint8Array, Buffer */
 var byteWriters = {};
-var extend = require("extend");
 var jsuError = require("./jsunicode.error");
+var contants = require("./jsunicode.constants.js");
 
+// DEPRECATED: Use registerFactory or registerPrototype instead
 var register = function (name, byteWriter) {
     byteWriters[name] = byteWriter;
 };
 
-register("hex", function (options) {
+var registerFactory = function (name, byteWriterFactory) {
+    if (typeof (byteWriterFactory) !== "function") {
+        throw new Error("byteWriterFactory must be a function");
+    }
+
+    byteWriters[name] = byteWriterFactory;
+};
+
+var registerPrototype = function (name, byteWriterPrototype) {
+    if (typeof (byteWriterPrototype) !== "function") {
+        throw new Error("byteWriterPrototype must be a function");
+    }
+
+    byteWriters[name] = function () { return new byteWriterPrototype(); };
+};
+
+var unregister = function (name) {
+    delete byteWriters[name];
+};
+
+registerFactory(contants.binaryFormat.hex, function (options) {
     var bytes = [];
-    options = extend({}, { upperCase: false }, options);
+    if (!options) { options = {}; }
+    options = {
+        upperCase: options.upperCase || false
+    };
 
     var write = function (currentByte) {
         if (currentByte === 0) {
@@ -45,14 +69,19 @@ register("hex", function (options) {
     var finish = function () {
         return bytes.join("");
     };
+    
+    var serialize = function (bytes) {
+        return bytes;
+    };
 
     return {
         write: write,
-        finish: finish
+        finish: finish,
+        serialize: serialize
     };
 });
 
-register("byteArray", function () {
+registerFactory(contants.binaryFormat.byteArray, function () {
     var bytes = [];
 
     var write = function (currentByte) {
@@ -62,14 +91,20 @@ register("byteArray", function () {
     var finish = function () {
         return bytes;
     };
+    
+    var serialize = function (bytes) {
+        return JSON.stringify(bytes);
+    };
 
     return {
         write: write,
-        finish: finish
+        finish: finish,
+        serialize: serialize
+
     };
 });
 
-register("Uint8Array", function () {
+var Uint8ArrayWriter = function () {
     var bytes = [];
 
     var write = function (currentByte) {
@@ -80,13 +115,38 @@ register("Uint8Array", function () {
         return new Uint8Array(bytes);
     };
 
+    var serialize = function (bytes) {
+        return JSON.stringify(Array.prototype.slice.call(bytes));
+    };
+
     return {
         write: write,
-        finish: finish
+        finish: finish,
+        serialize: serialize
+    };
+};
+
+registerFactory(contants.binaryFormat.Uint8Array, Uint8ArrayWriter);
+
+registerFactory(contants.binaryFormat.buffer, function () {
+    var arrayWriter = Uint8ArrayWriter();
+
+    var finish = function () {
+        return Buffer.from(arrayWriter.finish());
+    };
+
+    var serialize = function (bytes) {
+        return JSON.stringify(bytes);
+    };
+
+    return {
+        write: arrayWriter.write,
+        finish: finish,
+        serialize: serialize
     };
 });
 
-register("count", function () {
+registerFactory(contants.binaryFormat.count, function () {
     var byteCount = 0;
     var write = function () {
         byteCount++;
@@ -96,9 +156,14 @@ register("count", function () {
         return byteCount;
     };
 
+    var serialize = function (bytes) {
+        return bytes.toString();
+    };
+
     return {
         write: write,
-        finish: finish
+        finish: finish,
+        serialize: serialize
     };
 });
 
@@ -109,7 +174,7 @@ var b64 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
     "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2",
     "3", "4", "5", "6", "7", "8", "9", "+", "/"];
 
-register("base64", function () {
+registerFactory(contants.binaryFormat.base64, function () {
     var result = [];
     var firstByte = null;
     var secondByte = null;
@@ -148,9 +213,14 @@ register("base64", function () {
         return result.join("");
     };
 
+    var serialize = function (bytes) {
+        return bytes;
+    };
+
     return {
         write: write,
-        finish: finish
+        finish: finish,
+        serialize: serialize
     };
 });
 
@@ -174,7 +244,8 @@ var get = function (name, options) {
 
             return writer.write(currentByte);
         },
-        finish: writer.finish
+        finish: writer.finish,
+        serialize: writer.serialize
     };
 };
 
@@ -183,6 +254,9 @@ var list = function () {
 };
 
 exports.register = register;
+exports.registerFactory = registerFactory;
+exports.registerPrototype = registerPrototype;
+exports.unregister = unregister;
 exports.get = get;
 exports.list = list;
 

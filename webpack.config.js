@@ -29,7 +29,8 @@ module.exports = function (env) {
             }]
         },
         node: {
-            fs: "empty"
+            fs: "empty",
+            Buffer: false
         },
         /* webpack-dev-server is currently in "maintenance-only mode", and the docs
          * suggest webpack-serve instead; unforunately, webpack-serve has terrible

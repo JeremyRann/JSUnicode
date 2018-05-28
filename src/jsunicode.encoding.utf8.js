@@ -23,7 +23,10 @@ var decode = function (reader, options) {
     var highSurrogate = null;
 
     while (currentByte !== null) {
-        if (currentByte < 0x80) {
+        if (currentByte < 0 || currentByte > 0xff) {
+            resultBuilder.push(encUtil.errorString("Invalid byte", toe));
+        }
+        else if (currentByte < 0x80) {
             resultBuilder.push(encUtil.fromCodePoint(currentByte));
             highSurrogate = null;
         }

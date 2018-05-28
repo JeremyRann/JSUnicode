@@ -9,13 +9,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 var encUtil = require("./jsunicode.encoding.utilities");
+var constants = require("./jsunicode.constants");
 
 var decode = function (reader, options) {
     var toe = options.throwOnError;
 
     var isLittleEndian = false;
 
-    if (options.encoding === "UTF-32LE" || options.isLittleEndian) {
+    if (options.encoding === constants.encoding.utf32le || options.isLittleEndian) {
         isLittleEndian = true;
     }
 
@@ -26,16 +27,21 @@ var decode = function (reader, options) {
         if (bytes[1] === null || bytes[2] === null || bytes[3] === null) {
             resultBuilder.push(encUtil.errorString("Unexpected end of input", toe));
         }
-
-        var codePoint;
-        if (isLittleEndian) {
-            codePoint = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
+        else if (bytes[0] < 0 || bytes[1] < 0 || bytes[2] < 0 || bytes[3] < 0 ||
+                bytes[0] > 0xff || bytes[1] > 0xff || bytes[2] > 0xff || bytes[3] > 0xff) {
+            resultBuilder.push(encUtil.errorString("Invalid byte", toe));
         }
         else {
-            codePoint = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
-        }
+            var codePoint;
+            if (isLittleEndian) {
+                codePoint = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
+            }
+            else {
+                codePoint = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+            }
 
-        resultBuilder.push(encUtil.fromCodePoint(codePoint));
+            resultBuilder.push(encUtil.fromCodePoint(codePoint));
+        }
 
         bytes = [reader.read(), reader.read(), reader.read(), reader.read()];
     }
@@ -46,7 +52,7 @@ var decode = function (reader, options) {
 var encode = function (codePoints, writer, options) {
     var isLittleEndian = false;
 
-    if (options.encoding === "UTF-32LE" || options.isLittleEndian) {
+    if (options.encoding === constants.encoding.utf32le || options.isLittleEndian) {
         isLittleEndian = true;
     }
 

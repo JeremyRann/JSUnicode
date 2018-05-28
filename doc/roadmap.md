@@ -1,8 +1,7 @@
 Issues in GitHub tagged as "bug" will generally take priority over new features here
-* Current register functions should be deprecated, replaced with a system that requires providers instead of allowing objects
-* Require fromString/toString properties on byte reader/writer (will help demo page)
-* Integrate node buffers if available
-* Constants should be exported (such as the list of built-in encodings, UTF-8 etc.)
+* Rewrite README
+* Begin changelog
+* Handle BOMs
 * Typescript type definitions should be added
 * Consider using [flow](https://flow.org/)
 * Support asynchronous operations

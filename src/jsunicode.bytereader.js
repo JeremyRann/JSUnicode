@@ -8,18 +8,44 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/*global Uint8Array */
 var jsuError = require("./jsunicode.error.js");
+var constants = require("./jsunicode.constants.js");
 var byteReaders = {};
 
+// DEPRECATED: Use registerFactory or registerPrototype instead
 var register = function (name, byteReader) {
     byteReaders[name] = byteReader;
 };
 
-register("hex", function () {
+var registerFactory = function (name, byteReaderFactory) {
+    if (typeof (byteReaderFactory) !== "function") {
+        throw new Error("byteReaderFactory must be a function");
+    }
+
+    byteReaders[name] = byteReaderFactory;
+};
+
+var registerPrototype = function (name, byteReaderPrototype) {
+    if (typeof (byteReaderPrototype) !== "function") {
+        throw new Error("byteReaderPrototype must be a function");
+    }
+
+    byteReaders[name] = function () { return new byteReaderPrototype(); };
+};
+
+var unregister = function (name) {
+    delete byteReaders[name];
+};
+
+registerFactory(constants.binaryFormat.hex, function () {
     var inpString;
     var index;
 
     var begin = function (value) {
+        if (typeof(value) !== "string") {
+            throw new Error("Invalid data type (expected type of string)");
+        }
         inpString = value;
         index = 0;
         if (value.length % 2 !== 0) {
@@ -40,17 +66,59 @@ register("hex", function () {
         return currentByte;
     };
 
+    var deserialize = function (inpStr) {
+        return inpStr;
+    };
+
     return {
         begin: begin,
-        read: read
+        read: read,
+        deserialize: deserialize
     };
 });
 
-var byteArrayReader = function () {
+registerFactory(constants.binaryFormat.buffer, function () {
+    var buffer;
+    var index;
+
+    var begin = function (value) {
+        if (!(value instanceof Buffer)) {
+            throw new Error("Invalid data type (expected instance of Buffer)");
+        }
+        buffer = value;
+        index = 0;
+    };
+
+    var read = function () {
+        if (index >= buffer.length) {
+            return null;
+        }
+
+        return buffer.readUInt8(index++);
+    };
+
+    var deserialize = function (inpStr) {
+        return JSON.parse(inpStr);
+    };
+
+    return {
+        begin: begin,
+        read: read,
+        deserialize: deserialize
+    };
+});
+
+var byteArrayReader = function (isTyped) {
     var arr;
     var index;
 
     var begin = function (value) {
+        if (!(typeof(value) === "object")) {
+            throw new Error("Invalid data type (expected typeof object)");
+        }
+        if (isTyped && !(value instanceof Uint8Array)) {
+            throw new Error("Invalid data type (expected instance of Uint8Array)");
+        }
         arr = value;
         index = 0;
     };
@@ -63,14 +131,27 @@ var byteArrayReader = function () {
         return arr[index++];
     };
 
+    var deserialize;
+    if (isTyped) {
+        deserialize = function (inpStr) {
+            return new Uint8Array(JSON.parse(inpStr));
+        };
+    }
+    else {
+        deserialize = function (inpStr) {
+            return JSON.parse(inpStr);
+        };
+    }
+
     return {
         begin: begin,
-        read: read
+        read: read,
+        deserialize: deserialize
     };
 };
 
-register("byteArray", byteArrayReader);
-register("Uint8Array", byteArrayReader);
+registerFactory(constants.binaryFormat.byteArray, function () { return byteArrayReader(false); });
+registerFactory(constants.binaryFormat.Uint8Array, function () { return byteArrayReader(true); });
 
 var b64 = { "A":0, "B":1, "C":2, "D":3, "E":4, "F":5, "G":6, "H":7, "I":8,
     "J":9, "K":10, "L":11, "M":12, "N":13, "O":14, "P":15, "Q":16,
@@ -82,7 +163,7 @@ var b64 = { "A":0, "B":1, "C":2, "D":3, "E":4, "F":5, "G":6, "H":7, "I":8,
     "5":57, "6":58, "7":59, "8":60, "9":61, "+":62, "/":63
 };
 
-register("base64", function () {
+registerFactory(constants.binaryFormat.base64, function () {
     var inpString;
     var byteIndex;
     var charIndex;
@@ -90,6 +171,9 @@ register("base64", function () {
     var bufferedByteLength;
 
     var begin = function (value) {
+        if (typeof(value) !== "string") {
+            throw new Error("Invalid data type (expected typeof string)");
+        }
         if (value.length % 4 !== 0) {
             throw new jsuError("base64 string length not divisible by 4 (padding is required)");
         }
@@ -142,9 +226,14 @@ register("base64", function () {
         return currentByte;
     };
 
+    var deserialize = function (inpStr) {
+        return inpStr;
+    };
+
     return {
         begin: begin,
-        read: read
+        read: read,
+        deserialize: deserialize
     };
 });
 
@@ -166,7 +255,10 @@ var list = function () {
     return Object.keys(byteReaders);
 };
 
+exports.registerFactory = registerFactory;
+exports.registerPrototype = registerPrototype;
 exports.register = register;
+exports.unregister = unregister;
 exports.get = get;
 exports.list = list;
 
