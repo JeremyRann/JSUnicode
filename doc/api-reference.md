@@ -124,41 +124,126 @@ Encoding errors are generally thrown as instances of `jsunicodeError`; any other
 <a name="bytereaderapi"></a>
 ## Byte Reader API
 
+The Byte Reader API allows you to extend JSUnicode's built-in decoding mechanism such that it can read new binary formats. See [doc/extending.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/extending.md) for a deeper look at adding new binary formats to JSUnicode. The API is accessible through `jsunicode.byteReader`.
+
 <a name="reader_registerfactory"></a>
 ### registerFactory
+
+Register a new byteReader for JSUnicode's use by providing a function which returns a byteReader.
+
+```javascript
+jsunicode.byteReader.registerFactory([name], [byteReaderFactory]);
+```
+
+Where name is the name of the new byteReader and byteReaderFactory is a function which returns a byteReader object. A byteReader object is an object with a begin, read, and deserialize method.
 
 <a name="reader_registerprototype"></a>
 ### registerPrototype
 
+Register a new byteReader for JSUnicode's use by providing an object prototype which can be used to create new byteReaders. Similar to registerFactory, except that objects will be initialized with the `new` keyword.
+
+```javascript
+jsunicode.byteReader.registerPrototype([name], [byteReaderPrototype]);
+```
+
+Where name is the name of the new byteReader and byteReaderPrototype is an object prototype for a byteReader object. A byteReader object is an object with a begin, read, and deserialize method.
+
 <a name="reader_register"></a>
 ### register (deprecated)
+
+The old mechanism of registering byteReaders. This function is still included, but please use registerPrototype or registerFactory for any current/future development. This will likely be removed in the next major version of JSUnicode.
 
 <a name="reader_unregister"></a>
 ### unregister
 
+Remove a previously-registered byteReader
+
+```javascript
+jsunicode.byteReader.unregister([name])
+```
+
+Where name is the name of the byteReader to remove.
+
 <a name="reader_get"></a>
 ### get
+
+Retrieves a previously-registered byteReader
+
+```javascript
+jsunicode.byteReader.get([name])
+```
+
+Where name is the name of the byteReader to retrieve. This will always return an object, either created by invoking the object factory or using the `new` keyword on an object prototype.
 
 <a name="reader_list"></a>
 ### list
 
+Gets a string array of all names of currently-registered byteReaders
+
+```javascript
+jsunicode.byteReader.list()
+```
+
 <a name="bytewriterapi"></a>
 ## Byte Writer API
+
+The Byte Writer API allows you to extend JSUnicode's built-in encoding mechanism such that it can write new binary formats. See [doc/extending.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/extending.md) for a deeper look at adding new binary formats to JSUnicode. The API is accessible through `jsunicode.byteWriter`.
 
 <a name="writer_registerfactory"></a>
 ### registerFactory
 
+Register a new byteWriter for JSUnicode's use by providing a function which returns a byteWriter.
+
+```javascript
+jsunicode.byteWriter.registerFactory([name], [byteWriterFactory]);
+```
+
+Where name is the name of the new byteWriter and byteWriterFactory is a function which returns a byteWriter object. A byteWriter object is an object with a write, finish, and serialize method.
+
 <a name="writer_registerprototype"></a>
 ### registerPrototype
+
+Register a new byteWriter for JSUnicode's use by providing an object prototype which can be used to create new byteWriters. Similar to registerFacotry, except that objects will be initialized with the `new` keyword.
+
+```javascript
+jsunicode.byteWriter.registerPrototype([name], [byteWriterPrototype]);
+```
+
+Where name is the name of the new byteWriter and byteWriterPrototype is an object prototype for a byteWriter object. A byteWriter object is an object with a write, finish, and serialize method.
 
 <a name="writer_register"></a>
 ### register (deprecated)
 
+The old mechanism of registering byteWriters. This function is still included, but please use registerPrototype or registerFactory for any current/future development. This will likely be removed in the next major version of JSUnicode.
+
 <a name="writer_unregister"></a>
 ### unregister
+
+Remove a previously-registered byteWriter
+
+```javascript
+jsunicode.byteWriter.unregister([name])
+```
+
+Where name is the name of the byteWriter to remove.
 
 <a name="writer_get"></a>
 ### get
 
+Retrieves a previously-registered byteWriter
+
+```javascript
+jsunicode.byteWriter.get([name])
+```
+
+Where name is the name of the byteWriter to retrieve. This will always return an object, either created by invoking the object factory or using the `new` keyword on an object prototype.
+
 <a name="writer_list"></a>
 ### list
+
+Gets a string array of all names of currently-registered byteWriters
+
+```javascript
+jsunicode.byteWriter.list()
+```
+

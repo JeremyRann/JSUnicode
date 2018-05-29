@@ -34,10 +34,10 @@ var decode = function (reader, options) {
         else {
             var codePoint;
             if (isLittleEndian) {
-                codePoint = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
+                codePoint = ((bytes[3] << 24) >>> 0) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
             }
             else {
-                codePoint = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+                codePoint = ((bytes[0] << 24) >>> 0) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
             }
 
             resultBuilder.push(encUtil.fromCodePoint(codePoint));
@@ -62,10 +62,10 @@ var encode = function (codePoints, writer, options) {
             writer.write(codePoint & 0xff);
             writer.write((codePoint & 0xff00) >> 8);
             writer.write((codePoint & 0xff0000) >> 16);
-            writer.write((codePoint & 0xff000000) >> 24);
+            writer.write((codePoint & 0xff000000) >>> 24);
         }
         else {
-            writer.write((codePoint & 0xff000000) >> 24);
+            writer.write((codePoint & 0xff000000) >>> 24);
             writer.write((codePoint & 0xff0000) >> 16);
             writer.write((codePoint & 0xff00) >> 8);
             writer.write(codePoint & 0xff);

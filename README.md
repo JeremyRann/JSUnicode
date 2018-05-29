@@ -15,7 +15,7 @@ JSUnicode is a set of JavaScript utilities for handling Unicode. JSUnicode's cap
   * UTF-32 Big Endian (JSUnicode's default)
   * UTF-32 Little Endian
 
-JSUnicode is designed to be small (requiring no runtime dependencies) and to work in [node.js](http://nodejs.org) or in a browser. See [doc/api-reference.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/api-reference.md) for complete documentation.
+JSUnicode is designed to be small (requiring no runtime dependencies) and to work in [node.js](http://nodejs.org) or in a browser. See [doc/api-reference.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/api-reference.md) for complete documentation. If you encounter any problems, please file an issue on [JSUnicode's github issues page](https://github.com/JeremyRann/JSUnicode/issues). If there is a feature missing, you may want to take a look at [doc/roadmap.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/roadmap.md) to see if it is planned in the future. If you do have any feature requests, please file an issue even if it is planned on the roadmap; that will help prioritize new features.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ There are many reasons you may wish to encode or decode data in Unicode, but her
 
 ### Byte Count
 
-Often, data persistence layers have limits on encoded data storage. For instance, a database may specify that it stores VARCHAR fields in a UTF-8 collation, and a particular field may have a 200-byte limit. If your application accepts a user-input string that will be stored in such a field, you may wish to inform the user how many characters they have left in realtime, but JavaScript's `string.length` will be insufficient for this case, which provides a "character count" of sorts.
+Often, data persistence layers have limits on encoded data storage. For instance, a database may specify that it stores VARCHAR fields in a UTF-8 collation, and a particular field may have a 200-byte limit. If your application accepts a user-input string that will be stored in such a field, you may wish to inform the user how many characters they have left in real-time, but JavaScript's `string.length` will be insufficient for this case, which provides a "character count" of sorts.
 
 This use case is sufficiently common for JSUnicode to come equipped with a convenience function to provide byte counts for particular encodings. For instance, to get the byte count of the variable `myString`, you might do something like: 
 
@@ -84,5 +84,4 @@ fs.writeFile("./myfile.txt", jsunicode.encode(myString, {
 ```
 
 Again, note that no BOM handling is built-in yet, so if in the previous example `myString` doesn't have a BOM at the beginning, your file might be impossible to read by external systems. As a quick-fix, if you need to add a BOM, you can insert it in a string before encoding with something like: `myString = "\uFEFF" + myString;`; afterwards JSUnicode will encode the BOM and output it as expected.
-
 
