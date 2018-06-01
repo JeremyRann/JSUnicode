@@ -166,7 +166,6 @@ test("Binary representations", function (t) {
     }
     
     t.equal("23ed9e99f09f9882c2b124", jsunicode.convertBytes([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], "byteArray", "hex"), "Convert between binary representations");
-    t.end();
 
     var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
         throwOnError: true,
@@ -191,6 +190,16 @@ test("Binary representations", function (t) {
     
     jsunicode.byteReader.unregister("testhex");
     jsunicode.byteWriter.unregister("testhex");
+    t.end();
+});
+
+test("BOM handling", function (t) {
+    t.equal(0, jsunicode.decode("efbbbf").length, "UTF-8 BOM Ignored");
+    t.equal(0, jsunicode.decode("feff", { encoding: "UTF-16BE" }).length, "UTF-16BE BOM Ignored");
+    t.equal(0, jsunicode.decode("fffe", { encoding: "UTF-16LE" }).length, "UTF-16LE BOM Ignored");
+    t.equal(" ", jsunicode.decode("feff0020"), "UTF-16BE BOM Autodetect");
+    t.equal(" ", jsunicode.decode("fffe2000"), "UTF-16LE BOM Autodetect");
+    t.end();
 });
 
 test("Error handling", function (t) {

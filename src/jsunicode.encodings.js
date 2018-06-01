@@ -122,20 +122,23 @@ var encode = function (inpString, options) {
 var decode = function (inpBytes, options) {
     if (!options) { options = {}; }
     options = {
-        encoding: options.encoding || constants.encoding.utf8,
+        encoding: options.encoding,
         byteReader: options.byteReader || constants.binaryFormat.hex,
         throwOnError: options.throwOnError || false,
         byteReaderOptions: options.byteReaderOptions || {}
     };
 
-    var encoding = getEncoding(options.encoding);
-    if (encoding === undefined) {
-        throw new jsuError("Unrecognized encoding: " + options.encoding);
-    }
-
     var reader = byteReader.get(options.byteReader, options.byteReaderOptions);
     if (reader === undefined) {
         throw new jsuError("Unrecognized byte reader name: " + options.byteReader);
+    }
+
+    var encoding = null;
+    if (options.encoding) {
+        encoding = getEncoding(options.encoding);
+        if (encoding === undefined) {
+            throw new jsuError("Unrecognized encoding: " + options.encoding);
+        }
     }
 
     if (inpBytes === null || inpBytes === undefined) {
@@ -143,7 +146,41 @@ var decode = function (inpBytes, options) {
     }
 
     reader.begin(inpBytes);
-    var result = encoding.decode(reader, options);
+
+    var firstBytes = [reader.read(), reader.read(), reader.read()];
+
+    if (firstBytes[0] === 0xef &&
+            firstBytes[1] === 0xbb &&
+            firstBytes[2] === 0xbf) {
+        options.encoding = constants.encoding.utf8;
+        encoding = getEncoding(options.encoding);
+        firstBytes = [];
+    }
+    else if (firstBytes[0] === 0xfe &&
+            firstBytes[1] === 0xff) {
+        options.encoding = constants.encoding.utf16be;
+        encoding = getEncoding(options.encoding);
+        firstBytes = [firstBytes[2]];
+    }
+    else if (firstBytes[0] === 0xff &&
+            firstBytes[1] === 0xfe) {
+        options.encoding = constants.encoding.utf16le;
+        encoding = getEncoding(options.encoding);
+        firstBytes = [firstBytes[2]];
+    }
+
+    if (!encoding) {
+        options.encoding = constants.encoding.utf8;
+        encoding = getEncoding(options.encoding);
+    }
+ 
+    var readerWrapper = {
+        read: function () {
+            return firstBytes.length > 0 ? firstBytes.shift() : reader.read();
+        }
+    };
+
+    var result = encoding.decode(readerWrapper, options);
     return result;
 };
 
