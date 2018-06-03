@@ -2,6 +2,7 @@
 var test = require("tape-catch");
 var isNode = require("detect-node");
 var jsunicode = require("../src/jsunicode");
+var jc = jsunicode.constants;
 if (isNode) {
     var tapSpec = require("tap-spec");
     test.createStream()
@@ -187,6 +188,19 @@ test("Binary representations", function (t) {
     t.equal("23ed9e99f09f9882c2b124", jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
         byteWriter: "testhex"
     }), "Encode with custom byte writer");
+
+    var peekableReader = jsunicode.createPeekableByteReader(jsunicode.byteReader.get(jc.binaryFormat.hex));
+    peekableReader.begin("00102030405060");
+
+    t.equal(0x00, peekableReader.peekByte(), "Peek single byte");
+    t.equal(0x00, peekableReader.peekByte(), "Single peek doesn't iterate");
+    peekableReader.read();
+    t.equal(0x10, peekableReader.peekByte(), "Peek single byte after read");
+    t.equal(0x10, peekableReader.peekByte(), "Single peek doesn't iterate after read");
+    var peekBuffer = peekableReader.peekArray(20);
+    t.deepEqual([0x10, 0x20, 0x30, 0x40, 0x50, 0x60, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null], peekBuffer, "Peek array works");
+    t.equal(0x10, peekableReader.peekByte(), "Peek array doesn't iterate");
     
     jsunicode.byteReader.unregister("testhex");
     jsunicode.byteWriter.unregister("testhex");
@@ -194,11 +208,67 @@ test("Binary representations", function (t) {
 });
 
 test("BOM handling", function (t) {
+    var jsuError = jsunicode.jsunicodeError;
+
     t.equal(0, jsunicode.decode("efbbbf").length, "UTF-8 BOM Ignored");
-    t.equal(0, jsunicode.decode("feff", { encoding: "UTF-16BE" }).length, "UTF-16BE BOM Ignored");
-    t.equal(0, jsunicode.decode("fffe", { encoding: "UTF-16LE" }).length, "UTF-16LE BOM Ignored");
+    t.equal(0, jsunicode.decode("feff", { encoding: jc.encoding.utf16be }).length, "UTF-16BE BOM Ignored");
+    t.equal(0, jsunicode.decode("fffe", { encoding: jc.encoding.utf16le }).length, "UTF-16LE BOM Ignored");
+    t.equal(1, jsunicode.decode("efbbbf", {
+        preserveBOM: true
+    }).length, "UTF-8 BOM Preserved");
+    t.equal(1, jsunicode.decode("feff", {
+        encoding:jc.encoding.utf16be ,
+        preserveBOM: true
+    }).length, "UTF-16BE BOM Preserved");
+    t.equal(1, jsunicode.decode("fffe", {
+        encoding: jc.encoding.utf16le,
+        preserveBOM: true
+    }).length, "UTF-16LE BOM Preserved");
+    t.equal(" ", jsunicode.decode("efbbbf20"), "UTF-8 BOM Autodetect");
     t.equal(" ", jsunicode.decode("feff0020"), "UTF-16BE BOM Autodetect");
+    t.equal(" ", jsunicode.decode("feff0020", {
+        encoding: jc.encoding.utf16
+    }), "UTF-16BE BOM Autodetect (with hint)");
     t.equal(" ", jsunicode.decode("fffe2000"), "UTF-16LE BOM Autodetect");
+    t.equal(" ", jsunicode.decode("fffe2000", {
+        encoding: jc.encoding.utf16
+    }), "UTF-16LE BOM Autodetect (with hint)");
+    t.equal(" ", jsunicode.decode("fffe2000", {
+        encoding: jc.encoding.guess
+    }), "Explicitly specify guess encoding");
+    t.equal("\u0000", jsunicode.decode("feff0000"), "UTF-32LE BOM Ignored");
+    t.equal("\u0000\u0000\ufffd\ufffd", jsunicode.decode("0000fffe"), "UTF-32BE BOM Ignored");
+    t.equal("", jsunicode.decode("fffe0000", { detectUTF32BOM: true }), "UTF-32LE BOM Processed");
+    t.equal("", jsunicode.decode("0000feff", { detectUTF32BOM: true }), "UTF-32BE BOM Processed");
+    t.equal(" ", jsunicode.decode("fffe000020000000", {
+        encoding: jc.encoding.utf32
+    }), "UTF-32LE BOM Auto-processed");
+    t.equal(" ", jsunicode.decode("0000feff00000020", {
+        encoding: jc.encoding.utf32
+    }), "UTF-32BE BOM Auto-processed");
+    t.throws(function () {
+        jsunicode.decode("feff0020", { encoding: jc.encoding.utf16le });
+    }, jsuError, "Throw on BOM mismatch");
+    t.equal(" ", jsunicode.decode("fffe0020", {
+        encoding: jc.encoding.utf16be,
+        BOMMismatchBehavior: jc.BOMMismatchBehavior.trustRequest
+    }), "Trust Request over BOM");
+    t.equal(" ", jsunicode.decode("feff0020", {
+        encoding: jc.encoding.utf16le,
+        BOMMismatchBehavior: jc.BOMMismatchBehavior.trustBOM
+    }), "Trust BOM over Request");
+    t.equal(" ", jsunicode.decode("efbbbf2000", {
+        encoding: jc.encoding.utf16le,
+        BOMMismatchBehavior: jc.BOMMismatchBehavior.trustRequest
+    }), "Trust Request over BOM with BOM size mismatch");
+    t.equal(" ", jsunicode.decode("efbbbf20", {
+        encoding: jc.encoding.utf16le,
+        BOMMismatchBehavior: jc.BOMMismatchBehavior.trustBOM
+    }), "Trust Request over BOM with BOM size mismatch");
+    t.equal(" ", jsunicode.decode("efbbbf0020", {
+        encoding: jc.encoding.utf16,
+        BOMMismatchBehavior: jc.BOMMismatchBehavior.trustRequest
+    }), "Trust Request over BOM with loosely-specified encoding");
     t.end();
 });
 
@@ -349,6 +419,7 @@ test("Error handling", function (t) {
         byteReader: "byteArray",
         encoding: "UTF-32"
     }), "Unknown character on byte > 255 (UTF-32)");
+    t.equal("  \ufffd\ufffd", jsunicode.decode("2020feff"), "Unknown character on bad high byte");
 
     t.end();
 });

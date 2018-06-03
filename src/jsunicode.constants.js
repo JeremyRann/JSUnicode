@@ -8,6 +8,7 @@ module.exports = {
         count: "count"
     },
     encoding: {
+        guess: "guess",
         utf8: "UTF-8",
         utf16: "UTF-16",
         utf16be: "UTF-16BE",
@@ -15,5 +16,10 @@ module.exports = {
         utf32: "UTF-32",
         utf32be: "UTF-32BE",
         utf32le: "UTF-32LE"
+    },
+    BOMMismatchBehavior: {
+        trustRequest: "trustRequest",
+        "throw": "throw",
+        trustBOM: "trustBOM",
     }
 };

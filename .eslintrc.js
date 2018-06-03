@@ -10,7 +10,7 @@ module.exports = {
         "block-scoped-var": "error",
         "curly": ["error", "all"],
         "eqeqeq": ["error", "always", {"null": "always"}],
-        "indent": ["error", 4],
+        "indent": ["error", 4, { "SwitchCase": 1 }],
         "linebreak-style": ["error", "unix"],
         "no-console": "off",
         "quotes": ["error", "double"],

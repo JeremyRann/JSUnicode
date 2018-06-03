@@ -14,6 +14,95 @@ var byteWriter = require("./jsunicode.bytewriter");
 var constants = require("./jsunicode.constants");
 var encodings = {};
 
+var createPeekableByteReader = function (byteReader) {
+    var buffer = [];
+
+    var fillBuffer = function (count) {
+        for (var i = buffer.length; i < count; i++) {
+            buffer.push(byteReader.read());
+        }
+    };
+
+    var begin = function (value) {
+        return byteReader.begin(value);
+    };
+
+    var read = function () {
+        if (buffer.length > 0) {
+            return buffer.shift();
+        }
+        else {
+            return byteReader.read();
+        }
+    };
+
+    var peekArray = function (byteCount) {
+        fillBuffer(byteCount);
+        return buffer.slice(0, byteCount);
+    };
+
+    var peekByte = function () {
+        return peekArray(1)[0];
+    };
+
+    var deserialize = function (inpStr) {
+        return byteReader.deserialize(inpStr);
+    };
+
+    var skip = function (count) {
+        if (!count) {
+            count = 1;
+        }
+
+        fillBuffer(count);
+        return buffer.splice(0, count);
+    };
+
+    // (this is a crappy compare; don't use it broadly)
+    var arrayCompare = function (leftArray, rightArray) {
+        for (var i = 0; i < leftArray.length; i++) {
+            if (leftArray[i] !== rightArray[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    var checkBOM = function (checkUTF32) {
+        var firstBytes = peekArray(4);
+
+        if (arrayCompare([0xef, 0xbb, 0xbf], firstBytes)) {
+            return constants.encoding.utf8;
+        }
+        // Order matters here; a UTF-32LE BOM is a UTF-16LE BOM with two null bytes afterwards
+        else if (checkUTF32 && arrayCompare([0x00, 0x00, 0xfe, 0xff], firstBytes)) {
+            return constants.encoding.utf32be;
+        }
+        else if (checkUTF32 && arrayCompare([0xff, 0xfe, 0x00, 0x00], firstBytes)) {
+            return constants.encoding.utf32le;
+        }
+        else if (arrayCompare([0xfe, 0xff], firstBytes)) {
+            return constants.encoding.utf16be;
+        }
+        else if (arrayCompare([0xff, 0xfe], firstBytes)) {
+            return constants.encoding.utf16le;
+        }
+
+        return null;
+    };
+
+    return { 
+        begin: begin,
+        checkBOM: checkBOM,
+        deserialize: deserialize,
+        peekArray: peekArray,
+        peekByte: peekByte,
+        read: read,
+        skip: skip
+    };
+};
+
 var registerEncoding = function (encodingName, encoding) {
     encodings[encodingName] = encoding;
 };
@@ -122,21 +211,23 @@ var encode = function (inpString, options) {
 var decode = function (inpBytes, options) {
     if (!options) { options = {}; }
     options = {
-        encoding: options.encoding,
+        encoding: options.encoding || constants.encoding.guess,
         byteReader: options.byteReader || constants.binaryFormat.hex,
         throwOnError: options.throwOnError || false,
-        byteReaderOptions: options.byteReaderOptions || {}
+        byteReaderOptions: options.byteReaderOptions || {},
+        preserveBOM: options.preserveBOM || false,
+        detectUTF32BOM: options.detectUTF32BOM || false,
+        BOMMismatchBehavior: options.BOMMismatchBehavior || constants.BOMMismatchBehavior.throw
     };
 
     var reader = byteReader.get(options.byteReader, options.byteReaderOptions);
     if (reader === undefined) {
         throw new jsuError("Unrecognized byte reader name: " + options.byteReader);
     }
+    reader = createPeekableByteReader(reader);
 
-    var encoding = null;
-    if (options.encoding) {
-        encoding = getEncoding(options.encoding);
-        if (encoding === undefined) {
+    if (options.encoding && options.encoding !== "guess") {
+        if (!encodings.hasOwnProperty(options.encoding)) {
             throw new jsuError("Unrecognized encoding: " + options.encoding);
         }
     }
@@ -147,43 +238,60 @@ var decode = function (inpBytes, options) {
 
     reader.begin(inpBytes);
 
-    var firstBytes = [reader.read(), reader.read(), reader.read()];
-
-    if (firstBytes[0] === 0xef &&
-            firstBytes[1] === 0xbb &&
-            firstBytes[2] === 0xbf) {
-        options.encoding = constants.encoding.utf8;
-        encoding = getEncoding(options.encoding);
-        firstBytes = [];
-    }
-    else if (firstBytes[0] === 0xfe &&
-            firstBytes[1] === 0xff) {
-        options.encoding = constants.encoding.utf16be;
-        encoding = getEncoding(options.encoding);
-        firstBytes = [firstBytes[2]];
-    }
-    else if (firstBytes[0] === 0xff &&
-            firstBytes[1] === 0xfe) {
-        options.encoding = constants.encoding.utf16le;
-        encoding = getEncoding(options.encoding);
-        firstBytes = [firstBytes[2]];
-    }
-
-    if (!encoding) {
-        options.encoding = constants.encoding.utf8;
-        encoding = getEncoding(options.encoding);
-    }
- 
-    var readerWrapper = {
-        read: function () {
-            return firstBytes.length > 0 ? firstBytes.shift() : reader.read();
+    var bom = reader.checkBOM(options.detectUTF32BOM || options.encoding.startsWith(constants.encoding.utf32));
+    if (bom) {
+        // The value of "bom" might change if there's a mismatch (depending on options); go ahead and remove
+        // the BOM first in case the number of bytes in the new BOM is different than the detected value
+        if (!options.preserveBOM) {
+            if (bom === constants.encoding.utf8) {
+                reader.skip(3);
+            }
+            else if (bom.startsWith(constants.encoding.utf16)) {
+                reader.skip(2);
+            }
+            else if (bom.startsWith(constants.encoding.utf32)) {
+                reader.skip(4);
+            }
         }
-    };
 
-    var result = encoding.decode(readerWrapper, options);
+        var bomMismatch = false;
+        if (options.encoding && options.encoding !== "guess") {
+            switch (options.encoding) {
+                case constants.encoding.utf16:
+                    bomMismatch = [constants.encoding.utf16le, constants.encoding.utf16be].indexOf(bom) < 0;
+                    break;
+                case constants.encoding.utf32:
+                    bomMismatch = [constants.encoding.utf32le, constants.encoding.utf32be].indexOf(bom) < 0;
+                    break;
+                default:
+                    bomMismatch = options.encoding !== bom;
+                    break;
+            }
+        }
+
+        if (bomMismatch) {
+            if (options.BOMMismatchBehavior === constants.BOMMismatchBehavior.throw) {
+                throw new jsuError("Byte Order Mark/encoding mismatch");
+            }
+            else if (options.BOMMismatchBehavior === constants.BOMMismatchBehavior.trustRequest) {
+                bom = options.encoding;
+            }
+        }
+
+        options.encoding = bom;
+    }
+
+    if (options.encoding === "guess") {
+        options.encoding = constants.encoding.utf8;
+    }
+
+    var encoding = getEncoding(options.encoding);
+ 
+    var result = encoding.decode(reader, options);
     return result;
 };
 
+exports.createPeekableByteReader = createPeekableByteReader;
 exports.register = registerEncoding;
 exports.get = getEncoding;
 exports.decode = decode;

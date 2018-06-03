@@ -45,8 +45,9 @@ var decode = function (reader, options) {
             }
             else {
                 resultBuilder.push(encUtil.errorString("Invalid leading byte", toe));
+                currentByte = reader.read();
+                continue;
             }
-
 
             for (var i = byteCount - 1; i > 0; i--) {
                 continuationByte = reader.read();
