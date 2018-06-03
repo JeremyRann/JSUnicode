@@ -21,5 +21,11 @@ module.exports = {
         trustRequest: "trustRequest",
         "throw": "throw",
         trustBOM: "trustBOM",
+    },
+    BOMBehavior: {
+        never: "never",
+        preserve: "preserve",
+        auto: "auto",
+        always: "always"
     }
 };

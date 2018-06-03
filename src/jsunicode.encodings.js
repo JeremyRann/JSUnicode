@@ -182,7 +182,8 @@ var encode = function (inpString, options) {
         encoding: options.encoding || constants.encoding.utf8,
         byteWriter: options.byteWriter || constants.binaryFormat.hex,
         throwOnError: options.throwOnError || false,
-        byteWriterOptions: options.byteWriterOptions || {}
+        byteWriterOptions: options.byteWriterOptions || {},
+        BOMBehavior: options.BOMBehavior || constants.BOMBehavior.never
     };
 
     var encoding = getEncoding(options.encoding);
@@ -200,6 +201,28 @@ var encode = function (inpString, options) {
     }
 
     var codePoints = getCodePoints(inpString, options.throwOnError);
+
+    var addBOM = false;
+    var removeBOM = false;
+    switch (options.BOMBehavior) {
+        case constants.BOMBehavior.never:
+            removeBOM = true;
+            break;
+        case constants.BOMBehavior.auto:
+            addBOM = options.encoding.startsWith(constants.encoding.utf16);
+            removeBOM = !addBOM;
+            break;
+        case constants.BOMBehavior.always:
+            addBOM = true;
+            break;
+    }
+
+    if (addBOM && codePoints[0] !== 0xfeff) {
+        codePoints.unshift(0xfeff);
+    }
+    else if (removeBOM && codePoints[0] === 0xfeff) {
+        codePoints.shift();
+    }
 
     encoding.encode(codePoints, writer, options);
 

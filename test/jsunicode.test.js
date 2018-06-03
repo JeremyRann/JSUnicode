@@ -207,7 +207,7 @@ test("Binary representations", function (t) {
     t.end();
 });
 
-test("BOM handling", function (t) {
+test("Decode BOM handling", function (t) {
     var jsuError = jsunicode.jsunicodeError;
 
     t.equal(0, jsunicode.decode("efbbbf").length, "UTF-8 BOM Ignored");
@@ -269,6 +269,95 @@ test("BOM handling", function (t) {
         encoding: jc.encoding.utf16,
         BOMMismatchBehavior: jc.BOMMismatchBehavior.trustRequest
     }), "Trust Request over BOM with loosely-specified encoding");
+    t.end();
+});
+
+test("Encode BOM handling", function (t) {
+    t.equal("20", jsunicode.encode("\ufeff "), "Remove BOM");
+    t.equal("0020", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf16
+    }), "Remove BOM (UTF-16BE)");
+    t.equal("2000", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf16le
+    }), "Remove BOM (UTF-16LE)");
+    t.equal("00000020", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32
+    }), "Remove BOM (UTF-32BE)");
+    t.equal("20000000", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32le
+    }), "Remove BOM (UTF-32LE)");
+
+    t.equal("20", jsunicode.encode(" ", { BOMBehavior: jc.BOMBehavior.preserve }), "Skip on preserve BOM");
+    t.equal("0020", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Skip on preserve BOM (UTF-16BE)");
+    t.equal("2000", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16le,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Skip on preserve BOM (UTF-16LE)");
+    t.equal("00000020", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf32,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Skip on preserve BOM (UTF-32BE)");
+    t.equal("20000000", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf32le,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Skip on preserve BOM (UTF-32LE)");
+
+    t.equal("efbbbf20", jsunicode.encode("\ufeff ", { BOMBehavior: jc.BOMBehavior.preserve }), "Preserve BOM");
+    t.equal("feff0020", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf16,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Preserve BOM (UTF-16BE)");
+    t.equal("fffe2000", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf16le,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Preserve BOM (UTF-16LE)");
+    t.equal("0000feff00000020", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Preserve BOM (UTF-32BE)");
+    t.equal("fffe000020000000", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32le,
+        BOMBehavior: jc.BOMBehavior.preserve
+    }), "Preserve BOM (UTF-32LE)");
+
+    t.equal("20", jsunicode.encode("\ufeff ", { BOMBehavior: jc.BOMBehavior.auto }), "Auto add/remove BOM");
+    t.equal("feff0020", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16,
+        BOMBehavior: jc.BOMBehavior.auto
+    }), "Auto add/remove BOM (UTF-16BE)");
+    t.equal("fffe2000", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16le,
+        BOMBehavior: jc.BOMBehavior.auto
+    }), "Auto add/remove BOM (UTF-16LE)");
+    t.equal("00000020", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32,
+        BOMBehavior: jc.BOMBehavior.auto
+    }), "Auto add/remove BOM (UTF-32BE)");
+    t.equal("20000000", jsunicode.encode("\ufeff ", {
+        encoding: jc.encoding.utf32le,
+        BOMBehavior: jc.BOMBehavior.auto
+    }), "Auto add/remove BOM (UTF-32LE)");
+
+    t.equal("efbbbf20", jsunicode.encode(" ", { BOMBehavior: jc.BOMBehavior.always }), "Add BOM");
+    t.equal("feff0020", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16,
+        BOMBehavior: jc.BOMBehavior.always
+    }), "Add BOM (UTF-16BE)");
+    t.equal("fffe2000", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf16le,
+        BOMBehavior: jc.BOMBehavior.always
+    }), "Add BOM (UTF-16LE)");
+    t.equal("0000feff00000020", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf32,
+        BOMBehavior: jc.BOMBehavior.always
+    }), "Add BOM (UTF-32BE)");
+    t.equal("fffe000020000000", jsunicode.encode(" ", {
+        encoding: jc.encoding.utf32le,
+        BOMBehavior: jc.BOMBehavior.always
+    }), "Add BOM (UTF-32LE)");
     t.end();
 });
 
