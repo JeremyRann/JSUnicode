@@ -112,7 +112,7 @@ var getEncoding = function (encodingName) {
 };
 
 // Resolve a JavaScript string into an array of unicode code points
-var getCodePoints = function (inpString, throwOnError) {
+var getCodePoints = function (inpString, throwOnError, lineEndingConversion) {
     var result = [];
     var searchingForSurrogate = false;
     var highSurrogate = null;
@@ -142,6 +142,41 @@ var getCodePoints = function (inpString, throwOnError) {
                 handleError("Unmatched surrogate pair in string");
                 searchingForSurrogate = false;
             }
+
+            if (lineEndingConversion === constants.lineEndingConversion.lf) {
+                if (currentPoint === 0x0d) {
+                    if (inpString.charCodeAt(i + 1) === 0x0a) {
+                        continue;
+                    }
+                    else {
+                        currentPoint = 0x0a;
+                    }
+                }
+            }
+            else if (lineEndingConversion === constants.lineEndingConversion.cr) {
+                if (currentPoint === 0x0d) {
+                    if (inpString.charCodeAt(i + 1) === 0x0a) {
+                        i++;
+                    }
+                }
+                else if (currentPoint === 0x0a) {
+                    currentPoint = 0x0d;
+                }
+            }
+            else if (lineEndingConversion === constants.lineEndingConversion.crlf) {
+                if (currentPoint === 0x0d) {
+                    if (inpString.charCodeAt(i + 1) !== 0x0a) {
+                        result.push(0x0d);
+                        currentPoint = 0x0a;
+                    }
+                }
+                else if (currentPoint === 0x0a) {
+                    if (inpString.charCodeAt(i - 1) !== 0x0d) {
+                        result.push(0x0d);
+                    }
+                }
+            }
+
             result.push(currentPoint);
         }
         else {
@@ -183,7 +218,8 @@ var encode = function (inpString, options) {
         byteWriter: options.byteWriter || constants.binaryFormat.hex,
         throwOnError: options.throwOnError || false,
         byteWriterOptions: options.byteWriterOptions || {},
-        BOMBehavior: options.BOMBehavior || constants.BOMBehavior.never
+        BOMBehavior: options.BOMBehavior || constants.BOMBehavior.never,
+        lineEndingConversion: options.lineEndingConversion || constants.lineEndingConversion.none
     };
 
     var encoding = getEncoding(options.encoding);
@@ -200,7 +236,7 @@ var encode = function (inpString, options) {
         return inpString;
     }
 
-    var codePoints = getCodePoints(inpString, options.throwOnError);
+    var codePoints = getCodePoints(inpString, options.throwOnError, options.lineEndingConversion);
 
     var addBOM = false;
     var removeBOM = false;
@@ -240,7 +276,8 @@ var decode = function (inpBytes, options) {
         byteReaderOptions: options.byteReaderOptions || {},
         preserveBOM: options.preserveBOM || false,
         detectUTF32BOM: options.detectUTF32BOM || false,
-        BOMMismatchBehavior: options.BOMMismatchBehavior || constants.BOMMismatchBehavior.throw
+        BOMMismatchBehavior: options.BOMMismatchBehavior || constants.BOMMismatchBehavior.throw,
+        lineEndingConversion: options.lineEndingConversion || constants.lineEndingConversion.none
     };
 
     var reader = byteReader.get(options.byteReader, options.byteReaderOptions);

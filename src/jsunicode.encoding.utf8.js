@@ -87,7 +87,7 @@ var decode = function (reader, options) {
         resultBuilder.push(encUtil.errorString("Unmatched encoded surrogate pair", toe));
     }
 
-    return resultBuilder.join("");
+    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
 };
 
 var encode = function (codePoints, writer/*, options*/) {

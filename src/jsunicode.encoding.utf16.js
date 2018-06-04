@@ -69,7 +69,7 @@ var decode = function (reader, options) {
         resultBuilder.push(encUtil.errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)", toe));
     }
 
-    return resultBuilder.join("");
+    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
 };
 
 var encode = function (codePoints, writer, options) {

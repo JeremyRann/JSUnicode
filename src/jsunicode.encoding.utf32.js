@@ -46,7 +46,7 @@ var decode = function (reader, options) {
         bytes = [reader.read(), reader.read(), reader.read(), reader.read()];
     }
 
-    return resultBuilder.join("");
+    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
 };
 
 var encode = function (codePoints, writer, options) {

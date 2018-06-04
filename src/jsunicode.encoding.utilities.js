@@ -9,6 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 var jsuError = require("./jsunicode.error");
+var constants = require("./jsunicode.constants");
 
 var validateCodePoint = function (codePoint) {
     if (codePoint < 0) {
@@ -73,7 +74,64 @@ var errorString = function (err, throwOnError) {
     }
 };
 
+var joinStrings = function (strings, lineEndingConversion) {
+    var newStrings = [];
+    var i;
+    switch (lineEndingConversion) {
+        case constants.lineEndingConversion.none:
+            newStrings = strings;
+            break;
+        case constants.lineEndingConversion.lf:
+            for (i = 0; i < strings.length; i++) {
+                if (strings[i] === "\r") {
+                    if (strings[i + 1] !== "\n") {
+                        newStrings.push("\n");
+                    }
+                }
+                else {
+                    newStrings.push(strings[i]);
+                }
+            }
+            break;
+        case constants.lineEndingConversion.cr:
+            for (i = 0; i < strings.length; i++) {
+                if (strings[i] === "\n") {
+                    if (strings[i - 1] !== "\r") {
+                        newStrings.push("\r");
+                    }
+                }
+                else {
+                    newStrings.push(strings[i]);
+                }
+            }
+            break;
+        case constants.lineEndingConversion.crlf:
+            for (i = 0; i < strings.length; i++) {
+                if (strings[i] === "\n") {
+                    if (strings[i - 1] !== "\r") {
+                        newStrings.push("\r");
+                        newStrings.push("\n");
+                    }
+                }
+                else if (strings[i] === "\r") {
+                    if (strings[i + 1] !== "\n") {
+                        newStrings.push("\r");
+                        newStrings.push("\n");
+                    }
+                }
+                else {
+                    newStrings.push(strings[i]);
+                }
+            }
+            break;
+        default:
+            throw new Error("Unrecognized lineEndingConversion option");
+    }
+    return newStrings.join("");
+};
+
 exports.fromCodePoint = fromCodePoint;
 exports.errorString = errorString;
 exports.validateCodePoint = validateCodePoint;
+exports.joinStrings = joinStrings;
 

@@ -361,6 +361,44 @@ test("Encode BOM handling", function (t) {
     t.end();
 });
 
+test("Line ending conversion handling", function (t) {
+    t.equal("\n", jsunicode.decode("0a"), "Decode does not alter lf by default");
+    t.equal("\r", jsunicode.decode("0d"), "Decode does not alter cr by default");
+    t.equal("\r\n", jsunicode.decode("0d0a"), "Decode does not alter cr/lf by default");
+    t.equal("hi\nthere", jsunicode.decode("68690d0a7468657265", {
+        lineEndingConversion: jc.lineEndingConversion.lf
+    }), "Decode cr/lf to lf");
+    t.equal("hi\nthere", jsunicode.decode("68690d7468657265", {
+        lineEndingConversion: jc.lineEndingConversion.lf
+    }), "Decode cr to lf");
+    t.equal("hi\r\nthere", jsunicode.decode("68690a7468657265", {
+        lineEndingConversion: jc.lineEndingConversion.crlf
+    }), "Decode lf to cr/lf");
+    t.equal("hi\rthere", jsunicode.decode("68690a7468657265", {
+        lineEndingConversion: jc.lineEndingConversion.cr
+    }), "Decode lf to cr");
+
+    t.equal("0a", jsunicode.encode("\n"), "Encode does not alter lf by default");
+    t.equal("0d", jsunicode.encode("\r"), "Encode does not alter cr by default");
+    t.equal("0d0a", jsunicode.encode("\r\n"), "Encode does not alter cr/lf by default");
+    t.equal("68690d0a7468657265", jsunicode.encode("hi\nthere", {
+        lineEndingConversion: jc.lineEndingConversion.crlf
+    }), "Encode lf to cr/lf");
+    t.equal("68690d7468657265", jsunicode.encode("hi\r\nthere", {
+        lineEndingConversion: jc.lineEndingConversion.cr
+    }), "Encode cr/lf to cr");
+    t.equal("68690d7468657265", jsunicode.encode("hi\nthere", {
+        lineEndingConversion: jc.lineEndingConversion.cr
+    }), "Encode lf to cr");
+    t.equal("68690a7468657265", jsunicode.encode("hi\r\nthere", {
+        lineEndingConversion: jc.lineEndingConversion.lf
+    }), "Encode cr/lf to lf");
+    t.equal("68690a7468657265", jsunicode.encode("hi\rthere", {
+        lineEndingConversion: jc.lineEndingConversion.lf
+    }), "Encode cr to lf");
+    t.end();
+});
+
 test("Error handling", function (t) {
     var jsuError = jsunicode.jsunicodeError;
 

@@ -27,5 +27,11 @@ module.exports = {
         preserve: "preserve",
         auto: "auto",
         always: "always"
+    },
+    lineEndingConversion: {
+        none: "none",
+        lf: "lf",
+        crlf: "crlf",
+        cr: "cr"
     }
 };
