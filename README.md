@@ -10,9 +10,9 @@ JSUnicode is a set of JavaScript utilities for handling Unicode. JSUnicode's cap
 * Convert between representations
 * Built-in support for 5 Unicode encodings:
   * UTF-8
-  * UTF-16 Big Endian (JSUnicode's default)
+  * UTF-16 Big Endian
   * UTF-16 Little Endian
-  * UTF-32 Big Endian (JSUnicode's default)
+  * UTF-32 Big Endian
   * UTF-32 Little Endian
 
 JSUnicode is designed to be small (requiring no runtime dependencies) and to work in [node.js](http://nodejs.org) or in a browser. See [doc/api-reference.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/api-reference.md) for complete documentation. If you encounter any problems, please file an issue on [JSUnicode's github issues page](https://github.com/JeremyRann/JSUnicode/issues). If there is a feature missing, you may want to take a look at [doc/roadmap.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/roadmap.md) to see if it is planned in the future. If you do have any feature requests, please file an issue even if it is planned on the roadmap; that will help prioritize new features.
@@ -67,7 +67,7 @@ fs.readFile("./myfile.txt", function (err, contents) {
 });
 ```
 
-Note that [Byte order marks](https://en.wikipedia.org/wiki/Byte_order_mark) are not handled by JSUnicode at this time (although it's planned for a future release), so you may see an extra character at the start of data you read from a file.
+Note that [Byte order marks](https://en.wikipedia.org/wiki/Byte_order_mark) are now handled by JSUnicode. The default behavior should work for most cases, but refer to [doc/api-reference.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/api-reference.md) for more.
 
 ### Write UTF-16BE File
 
@@ -83,5 +83,5 @@ fs.writeFile("./myfile.txt", jsunicode.encode(myString, {
 }), function (err) { console.log(err); })
 ```
 
-Again, note that no BOM handling is built-in yet, so if in the previous example `myString` doesn't have a BOM at the beginning, your file might be impossible to read by external systems. As a quick-fix, if you need to add a BOM, you can insert it in a string before encoding with something like: `myString = "\uFEFF" + myString;`; afterwards JSUnicode will encode the BOM and output it as expected.
+For encoding, it's generally assumed that Byte Order Marks are not desired, so if you do want BOMs in your output, you may add for instance `BOMBehavior: jsunicode.constants.BOMBehavior.auto` to add BOMs for UTF-16. Again, see [doc/api-reference.md](https://github.com/JeremyRann/JSUnicode/blob/master/doc/api-reference.md) for all the available options.
 
