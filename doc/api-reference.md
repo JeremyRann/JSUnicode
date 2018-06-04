@@ -8,6 +8,7 @@
   * [countEncodedBytes](#countencodedbytes)
   * [convertBytes](#convertbytes)
   * [constants](#constants)
+  * [createPeekableByteReader](#create_peekable_byte_reader)
   * [jsunicodeError](#jsunicodeerror)
 * [Byte Reader API](#bytereaderapi)
   * [registerFactory](#reader_registerfactory)
@@ -52,6 +53,8 @@ Where inpString is the string you wish to encode and options is an optional obje
     * buffer
     * count (outputs a count instead of the actual bytes; used by countEncodedBytes)
 * throwOnError: A boolean to indicate if invalid strings should throw an error or be encoded as the non-printable character (0xfffd). Generally the only way to get an invalid string in JavaScript is to encode binary as a string, otherwise this should be very rare. Defaults to false.
+* BOMBehavior: A string indicating how JSUnicode should write the byte output. Possible values are in the `jsunicode.constants.BOMBehavior` object: "never", "preserve", "auto", and "always" (default "never"). JSUnicode's default assumption is that you're probably not working with Byte Order Marks, so it will remove Byte Order Marks while encoding by default. If you change this option to "preserve", a BOM at the start of a string will remain when encoded. The "auto" option will add a BOM for UTF-16 encodings if not present, but remove a BOM if present for UTF-8 or UTF-32 encodings. Finally, the "always" option always adds a BOM to the output if it is not present in the string.
+* lineEndingConversion: A string specifying if JSUnicode should attempt to alter line endings while encoding. Options are in `jsunicode.constants.lineEndingConversion`: "none", "lf", "crlf", and "cr" (default "none").
 * byteWriterOptions: An options object that is passed along to the byteWriter. The only option used out-of-the-box is the upperCase option for hex encoding; hex encoding is by default done in lower case, setting this option to true converts to upper case.
 
 For example, to encode a string in UTF-16 using base64 as the output:
@@ -72,10 +75,14 @@ Decodes a binary value into a JavaScript string
 jsunicode.decode([inpBytes], [options]);
 ```
 Where inpBytes specifies the encoded bytes which will be decoded into a string. As with encoding, the options argument is optional and supports the following members:
-* encoding: A string specifying the Unicode encoding variant to use. Default is "UTF-8". Encoding values are contained in the constants object `jsunicode.constants.encoding` (similar to the encode method).
+* encoding: A string specifying the Unicode encoding variant to use. Default is "guess", which will normally result in UTF-8 (see the description for `BOMMismatchBehaivor for more`). Encoding values are contained in the constants object `jsunicode.constants.encoding` (similar to the encode method). Also note that "guess" is only valid as an encoding opertion for decoding (an error will be thrown if you specify "guess" as the encoding for an encode operation).
 * byteReader: A string specifying how to read the inpBytes argument; generally the mirror of encode's byteWriter. Default is "hex". It is possible to add new byteWriters via the byteWriter API. The built-in values are listed in the constants object `jsunicode.constants.binaryFormat`, except for `count` which is only supported for encoding.
 * throwOnError: A boolean indicating if invalid bytes should cause errors to be thrown or simply output the non-printable character (0xfffd). Defaults to false.
 * allowEncodedSurrogatePair: A boolean allowing for relaxed rules on encodings such as UTF-8 and UTF-32 which do not normally encode surrogate pairs. This may be useful if decoding binary which was originally encoded with an iffy Unicode implementation. Defaults to false.
+* preserveBOM: A boolean indicating if a Byte Order Mark at the beginning of `inpBytes` will be kept. This defaults to false, which means leading BOMs (for instance from a file or HTTP call) will be removed by default unless this option is true.
+* detectUTF32BOM: A boolean indicating if JSUnicode should look for UTF-32 Byte Order Marks. Defaults to false unless the encoding option is set to "UTF-32". By default, JSUnicode will use the presense of a ByteOrderMark as part of the encoding determination, but will ignore UTF-32 Byte Order Marks (since they are considered exceedingly rare). Set this property to true if you expect that your bytes might include a UTF-32 BOM and you want jsunicode to detect it without explicitly setting encoding to one of the UTF-32 options.
+* BOMMismatchBehavior: A string specifying what JSUnicode should do if it receives conflicting information about a byte collection's encoding. This can happen if for instance the encoding option is set to UTF-8, but the input has a UTF-16BE BOM at the beginning. The possible options are in `jsunicode.constants.BOMMismatchBehavior`: "throw", "trustBOM", and "trustRequest" (the default is "throw"). Note that the encoding options "UTF-16" and "UTF-32" are somewhat loose; for those options, JSUnicode will use the presense of a Byte Order Mark to determine endianness but default to Big Endian if there is no BOM. If no encoding is specified (or it's set to "guess"), UTF-8 is assumed.
+* lineEndingConversion: A string specifying if JSUnicode should attempt to alter line endings while decoding. Options are in `jsunicode.constants.lineEndingConversion`: "none", "lf", "crlf", and "cr" (default "none").
 * byteReaderOptions: An options object that is passed along to the byteReader. None of the built-in byteReaders have additional options, although any new byteReaders registered get access to this options object should they need it.
 
 For example, to decode the above encoding example:
@@ -120,6 +127,25 @@ A constants object is provided on the jsunicode object for convenience. Using th
 ### jsunicodeError
 
 Encoding errors are generally thrown as instances of `jsunicodeError`; any other error type thrown by JSUnicode generally indicates a bug or an incorrect invocation of JSUnicode.
+
+<a name="create_peekable_byte_reader"></a>
+### createPeekableByteReader
+
+Extends an existing byteReader to have peek functions
+
+```javascript
+jsunicode.createPeekableByteReader([byteReader]);
+```
+
+Where byteReader is an object with byteReader functions (generally the result of `jsunicode.getByteReader()`).
+
+This function is used internally (generally to look for Byte Order Marks), but you can access it via the jsunicode API; it will wrap an existing byteReader and add three functions:
+
+* `peekArray([byteCount])`: returns an array of the next bytes in the reader
+* `peekByte()`: returns the next byte in the reader
+* `checkBOM(checkUTF32)`: Checks the next bytes in the reader to see if they are an encoding's Byte Order Mark; returns the encoding name (such as "UTF-8" or "UTF-16BE") if it is, null otherwise. Will ignore UTF-32 BOMs unless checkUTF32 is true
+
+Calling peekArray and peekByte are like calling the reader's `read()` function, except that subsequent calls to read will not be affected.
 
 <a name="bytereaderapi"></a>
 ## Byte Reader API
