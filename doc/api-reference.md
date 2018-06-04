@@ -1,4 +1,4 @@
-#JSUnicode API Reference
+# JSUnicode API Reference
 
 ## Table of Contents
 
