@@ -3,9 +3,19 @@ const path = require("path");
 module.exports = function (env) {
     // env can be dev or prod
     env = env || "dev";
-    var entry = {
-        "jsunicode": "./src/jsunicode.js"
-    };
+    var min = process.env.MIN === "false" ? false : true;
+
+    var entry;
+    if (min) {
+        entry = {
+            "jsunicode.min": "./src/jsunicode.js"
+        };
+    }
+    else {
+        entry = {
+            "jsunicode": "./src/jsunicode.js"
+        };
+    }
 
     if (env === "dev") {
         entry["jsunicode.test"] = "./test/jsunicode.test.js";
@@ -44,6 +54,9 @@ module.exports = function (env) {
          * this writing screw it; webpack-dev-server it is. Hopefully in the future
          * either webpack-serve will be easier to use or another alternative will
          * appear. */
+        optimization: {
+            minimize: process.env.MIN === "false" ? false : true
+        },
         devServer: {
             inline: true,
             contentBase: __dirname,

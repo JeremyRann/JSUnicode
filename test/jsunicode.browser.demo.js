@@ -18,7 +18,7 @@ $(document).ready(function () {
                         });
                     }
                     else if (tokens[1] === "static") {
-                        $.getScript("dist/jsunicode.js").done(jsUnicodeLoaded).fail(function () {
+                        $.getScript("dist/jsunicode.min.js").done(jsUnicodeLoaded).fail(function () {
                             $("pre.error").show().text("Error loading jsunicode");
                         });
                     }
