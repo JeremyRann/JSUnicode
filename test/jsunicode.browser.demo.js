@@ -13,7 +13,7 @@ $(document).ready(function () {
                 var tokens = params[i].split("=");
                 if (tokens[0] === "load") {
                     if (tokens[1] === "dynamic") {
-                        $.getScript("jsunicode.js").done(jsUnicodeLoaded).fail(function () {
+                        $.getScript("jsunicode.min.js").done(jsUnicodeLoaded).fail(function () {
                             $("pre.error").show().text("Error loading jsunicode");
                         });
                     }
@@ -85,10 +85,36 @@ $(document).ready(function () {
         }
     });
 
+    $("#validate").click(function () {
+        $("pre.error").hide();
+        try {
+            var byteReaderName = $("#byteReader_validate").val();
+            var byteReader = jsunicode.byteReader.get(byteReaderName);
+            var inpVal = byteReader.deserialize($("#validateText").val());
+
+            var result = jsunicode.decode(inpVal, {
+                encoding: $("#textEncoding").val(),
+                byteReader: byteReaderName
+            });
+            $("#output").text(result);
+        } catch (err) {
+            if (err instanceof jsunicode.jsunicodeError) {
+                $("pre.error").show().text(err.toString());
+            }
+            else {
+                $("pre.error").show().text("An unexpected error has occurred");
+                throw err;
+            }
+        }
+    });
+
     function jsUnicodeLoaded() {
         $("body").removeClass("not-loaded").addClass("loaded");
         jsunicode = window.jsunicode;
         $.each(jsunicode.byteReader.list(), function (i, item) {
+            $("#byteReader_validate").append($("<option>", {
+                text: item
+            }));
             $("#byteReader").append($("<option>", {
                 text: item
             }));
