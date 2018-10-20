@@ -12,24 +12,23 @@ var encUtil = require("./jsunicode.encoding.utilities");
 var constants = require("./jsunicode.constants");
 
 var decode = function (reader, options) {
-    var toe = options.throwOnError;
+    var textBuilder = encUtil.textBuilder(options.throwOnError, options.lineEndingConversion, options.validate);
     var isLittleEndian = false;
 
     if (options.encoding === constants.encoding.utf16le || options.isLittleEndian) {
         isLittleEndian = true;
     }
 
-    var resultBuilder = [];
     var firstByte = reader.read();
     var secondByte = reader.read();
     var codePoint;
     var surrogateCodePoint = null;
     while (firstByte !== null) {
         if (secondByte === null) {
-            resultBuilder.push(encUtil.errorString("Odd number of bytes in byte stream (must be even for UTF-16)", toe));
+            textBuilder.addError("Odd number of bytes in byte stream (must be even for UTF-16)");
         }
         else if (firstByte < 0 || firstByte > 0xff || secondByte < 0 || secondByte > 0xff) {
-            resultBuilder.push(encUtil.errorString("Invalid byte", toe));
+            textBuilder.addError("Invalid byte");
         }
         else {
             if (isLittleEndian) {
@@ -41,23 +40,23 @@ var decode = function (reader, options) {
 
             if (surrogateCodePoint !== null) {
                 if (codePoint < 0xDC00 || codePoint > 0xDFFF) {
-                    resultBuilder.push(encUtil.errorString("Surrogate code point not found when expected", toe));
+                    textBuilder.addError("Surrogate code point not found when expected");
                 }
                 else {
-                    resultBuilder.push(encUtil.fromCodePoint(surrogateCodePoint, codePoint));
+                    textBuilder.addCodePoint(surrogateCodePoint, codePoint);
                 }
                 surrogateCodePoint = null;
             }
             else {
                 if (codePoint >= 0xDC00 && codePoint <= 0xDFFF) {
-                    resultBuilder.push(encUtil.errorString("Invalid code point (in high surrogate range)", toe));
+                    textBuilder.addError("Invalid code point (in high surrogate range)");
                     surrogateCodePoint = null;
                 }
                 else if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
                     surrogateCodePoint = codePoint;
                 }
                 else {
-                    resultBuilder.push(encUtil.fromCodePoint(codePoint));
+                    textBuilder.addCodePoint(codePoint);
                     surrogateCodePoint = null;
                 }
             }
@@ -66,10 +65,10 @@ var decode = function (reader, options) {
         secondByte = reader.read();
     }
     if (surrogateCodePoint !== null) {
-        resultBuilder.push(encUtil.errorString("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)", toe));
+        textBuilder.addError("High surrogate code point at end of byte stream (expected corresponding low surrogate code point)");
     }
 
-    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
+    return textBuilder.getResult();
 };
 
 var encode = function (codePoints, writer, options) {

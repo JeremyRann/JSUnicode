@@ -60,6 +60,7 @@ var convertBytes = function (inpBytes, byteReaderName, byteWriterName, options) 
 exports.constants = constants;
 exports.decode = encodings.decode;
 exports.encode = encodings.encode;
+exports.validate = encodings.validate;
 exports.createPeekableByteReader = encodings.createPeekableByteReader;
 exports.byteReader = byteReader;
 exports.byteWriter = byteWriter;

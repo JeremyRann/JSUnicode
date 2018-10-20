@@ -273,6 +273,7 @@ var decode = function (inpBytes, options) {
         encoding: options.encoding || constants.encoding.guess,
         byteReader: options.byteReader || constants.binaryFormat.hex,
         throwOnError: options.throwOnError || false,
+        validate: options.validate || false,
         byteReaderOptions: options.byteReaderOptions || {},
         preserveBOM: options.preserveBOM || false,
         detectUTF32BOM: options.detectUTF32BOM || false,
@@ -351,9 +352,16 @@ var decode = function (inpBytes, options) {
     return result;
 };
 
+var validate = function (inpBytes, options) {
+    if (!options) { options = {}; }
+    options.validate = true;
+    return decode(inpBytes, options);
+};
+
 exports.createPeekableByteReader = createPeekableByteReader;
 exports.register = registerEncoding;
 exports.get = getEncoding;
 exports.decode = decode;
 exports.encode = encode;
+exports.validate = validate;
 

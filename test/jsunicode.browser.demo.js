@@ -92,11 +92,11 @@ $(document).ready(function () {
             var byteReader = jsunicode.byteReader.get(byteReaderName);
             var inpVal = byteReader.deserialize($("#validateText").val());
 
-            var result = jsunicode.decode(inpVal, {
+            var result = jsunicode.validate(inpVal, {
                 encoding: $("#textEncoding").val(),
                 byteReader: byteReaderName
             });
-            $("#output").text(result);
+            $("#output").text(JSON.stringify(result, null, 4));
         } catch (err) {
             if (err instanceof jsunicode.jsunicodeError) {
                 $("pre.error").show().text(err.toString());

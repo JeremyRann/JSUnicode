@@ -551,3 +551,8 @@ test("Error handling", function (t) {
     t.end();
 });
 
+test("Validation", function (t) {
+    t.equal(true, jsunicode.validate("2020").isValid, "Validation passess for valid string");
+    t.equal(false, jsunicode.validate("2020feff").isValid, "Validation catches bad high byte");
+});
+

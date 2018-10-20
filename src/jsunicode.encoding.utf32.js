@@ -12,24 +12,22 @@ var encUtil = require("./jsunicode.encoding.utilities");
 var constants = require("./jsunicode.constants");
 
 var decode = function (reader, options) {
-    var toe = options.throwOnError;
-
+    var textBuilder = encUtil.textBuilder(options.throwOnError, options.lineEndingConversion, options.validate);
     var isLittleEndian = false;
 
     if (options.encoding === constants.encoding.utf32le || options.isLittleEndian) {
         isLittleEndian = true;
     }
 
-    var resultBuilder = [];
     var bytes = [reader.read(), reader.read(), reader.read(), reader.read()];
 
     while (bytes[0] !== null) {
         if (bytes[1] === null || bytes[2] === null || bytes[3] === null) {
-            resultBuilder.push(encUtil.errorString("Unexpected end of input", toe));
+            textBuilder.addError("Unexpected end of input");
         }
         else if (bytes[0] < 0 || bytes[1] < 0 || bytes[2] < 0 || bytes[3] < 0 ||
                 bytes[0] > 0xff || bytes[1] > 0xff || bytes[2] > 0xff || bytes[3] > 0xff) {
-            resultBuilder.push(encUtil.errorString("Invalid byte", toe));
+            textBuilder.addError("Invalid byte");
         }
         else {
             var codePoint;
@@ -40,13 +38,13 @@ var decode = function (reader, options) {
                 codePoint = ((bytes[0] << 24) >>> 0) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
             }
 
-            resultBuilder.push(encUtil.fromCodePoint(codePoint));
+            textBuilder.addCodePoint(codePoint);
         }
 
         bytes = [reader.read(), reader.read(), reader.read(), reader.read()];
     }
 
-    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
+    return textBuilder.getResult();
 };
 
 var encode = function (codePoints, writer, options) {

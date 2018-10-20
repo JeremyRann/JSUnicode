@@ -11,23 +11,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var encUtil = require("./jsunicode.encoding.utilities");
 
 var decode = function (reader, options) {
-    var resultBuilder = [];
     var currentByte = reader.read();
     var byteCount;
     var continuationByte;
     var codePoint;
-    var toe = options.throwOnError;
     // Generally, it's invalid to encode a surrogate pair in UTF-8, but we'll allow a user
     // to specify that they have iffy data using the allowEncodedSurrogatePair option. In
     // that case, we still want to validate that the surrogate pair is really a pair.
     var highSurrogate = null;
+    var textBuilder = encUtil.textBuilder(options.throwOnError, options.lineEndingConversion, options.validate);
 
     while (currentByte !== null) {
         if (currentByte < 0 || currentByte > 0xff) {
-            resultBuilder.push(encUtil.errorString("Invalid byte", toe));
+            textBuilder.addError("Invalid byte");
         }
         else if (currentByte < 0x80) {
-            resultBuilder.push(encUtil.fromCodePoint(currentByte));
+            textBuilder.addCodePoint(currentByte);
             highSurrogate = null;
         }
         else {
@@ -44,7 +43,7 @@ var decode = function (reader, options) {
                 codePoint = (currentByte & 0x07) << 18;
             }
             else {
-                resultBuilder.push(encUtil.errorString("Invalid leading byte", toe));
+                textBuilder.addError("Invalid leading byte");
                 currentByte = reader.read();
                 continue;
             }
@@ -52,31 +51,31 @@ var decode = function (reader, options) {
             for (var i = byteCount - 1; i > 0; i--) {
                 continuationByte = reader.read();
                 if (continuationByte === null) {
-                    resultBuilder.push(encUtil.errorString("Unexpected end of byte stream", toe));
+                    textBuilder.addError("Unexpected end of byte stream");
                 }
                 else if ((continuationByte & 0xc0) !== 0x80) {
-                    resultBuilder.push(encUtil.errorString("Invalid continuation byte", toe));
+                    textBuilder.addError("Invalid continuation byte");
                 }
                 else {
                     codePoint += (continuationByte - 0x80) << ((i - 1) * 6);
                 }
             }
 
-            if (!encUtil.validateCodePoint(codePoint)) {
+            if (!textBuilder.validateCodePoint(codePoint)) {
                 if (options.allowEncodedSurrogatePair && highSurrogate === null && codePoint >= 0xd800 && codePoint <= 0xdbff) {
                     highSurrogate = codePoint;
                 }
                 else if (options.allowEncodedSurrogatePair && highSurrogate !== null && codePoint >= 0xdc00 && codePoint <= 0xdfff) {
-                    resultBuilder.push(encUtil.fromCodePoint(highSurrogate, codePoint));
+                    textBuilder.addCodePoint(highSurrogate, codePoint);
                     highSurrogate = null;
                 }
                 else {
-                    resultBuilder.push(encUtil.errorString("Invalid Unicode code point detected", toe));
+                    textBuilder.addError("Invalid Unicode code point detected");
                     highSurrogate = null;
                 }
             }
             else {
-                resultBuilder.push(encUtil.fromCodePoint(codePoint));
+                textBuilder.addCodePoint(codePoint);
                 highSurrogate = null;
             }
         }
@@ -84,10 +83,10 @@ var decode = function (reader, options) {
     }
 
     if (options.allowEncodedSurrogatePair && highSurrogate !== null) {
-        resultBuilder.push(encUtil.errorString("Unmatched encoded surrogate pair", toe));
+        textBuilder.addError("Unmatched encoded surrogate pair");
     }
 
-    return encUtil.joinStrings(resultBuilder, options.lineEndingConversion);
+    return textBuilder.getResult();
 };
 
 var encode = function (codePoints, writer/*, options*/) {
