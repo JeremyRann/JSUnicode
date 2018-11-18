@@ -268,7 +268,35 @@ var encode = function (inpString, options) {
 };
 
 var decode = function (inpBytes, options) {
+    if (options && options.validate === true) {
+        try {
+            return decodeInternal(inpBytes, options);
+        }
+        catch (error) {
+            var errorMessage = "An unexpected error has occurred";
+            if (error && error.message && typeof(error.message) === "string") {
+                errorMessage = error.message;
+            }
+            else if (typeof(error) === "string") {
+                errorMessage = error;
+            }
+
+            return {
+                isValid: false,
+                errs: [errorMessage]
+            };
+        }
+    }
+    else {
+        return decodeInternal(inpBytes, options);
+    }
+};
+
+var decodeInternal = function (inpBytes, options) {
     if (!options) { options = {}; }
+    if (options.validate !== undefined && typeof(options.validate) !== "boolean") {
+        throw new jsuError("Validate option must be of type boolean (got " + typeof(options.validate));
+    }
     options = {
         encoding: options.encoding || constants.encoding.guess,
         byteReader: options.byteReader || constants.binaryFormat.hex,

@@ -554,5 +554,9 @@ test("Error handling", function (t) {
 test("Validation", function (t) {
     t.equal(jsunicode.validate("2020").isValid, true, "Validation passess for valid string");
     t.equal(jsunicode.validate("2020feff").isValid, false, "Validation catches bad high byte");
+    t.equal(jsunicode.validate("feff0020", { encoding: jc.encoding.utf16le }).isValid, false, "Validation catches error condition");
+    t.throws(function () {
+        jsunicode.decode("2020", { validate: 1 });
+    }, jsunicode.jsunicodeError, "Validation setting must be boolean");
 });
 
