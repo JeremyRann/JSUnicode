@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0
+
+1.2.0 adds validation functionality
+
+### Bug Fixes
+
+* Tests cleaned up so that actual and expected are no longer reversed, and constants object is used consistently
+* Example page from webpack dev server fixed (jsunicode reference was wrong)
+
+### New Features
+* There is now a validation feature so that a user can check if a binary representation is valid without using the decode function directly (see API documentation for details)
+
 ## 1.1.0
 
 1.1.0 is primarily intended to modernize/clean up JSUnicode's build structure and clean up the documentation; it should be easier to get a dev environment spun up now. As an added bonus, node Buffers, Byte Order Marks, and newline conversion are now supported.
