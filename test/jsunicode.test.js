@@ -58,22 +58,22 @@ test("UTF-8", function (t) {
 
 test("UTF-16", function (t) {
     var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-        encoding: "UTF-16",
+        encoding: jsunicode.constants.encoding.utf16,
         throwOnError: true
     });
 
     t.equal(encoded, "0023d799d83dde0200b10024", "Encode a string as UTF-16 in hex which includes a non-BMP character");
 
-    var plainText = jsunicode.decode("0023D799D83DDE0200B10024", { encoding: "UTF-16", throwOnError: true });
+    var plainText = jsunicode.decode("0023D799D83DDE0200B10024", { encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     t.equal(plainText, "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode a string encoded as UTF-16 in hex which includes a non-BMP character");
 
     encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-        encoding: "UTF-16LE",
+        encoding: jsunicode.constants.encoding.utf16le,
         throwOnError: true
     });
     t.equal(encoded, "230099d73dd802deb1002400", "Encode a string as UTF-16 (Little Endian) in hex which includes a non-BMP character");
 
-    plainText = jsunicode.decode("230099D73DD802DEB1002400", { encoding: "UTF-16LE", throwOnError: true });
+    plainText = jsunicode.decode("230099D73DD802DEB1002400", { encoding: jsunicode.constants.encoding.utf16le, throwOnError: true });
     t.equal(plainText, "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode a string encoded as UTF-16 (Little Endian) in hex which includes a non-BMP character");
 
     t.end();
@@ -81,24 +81,24 @@ test("UTF-16", function (t) {
 
 test("UTF-32", function (t) {
     var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-        encoding: "UTF-32",
+        encoding: jsunicode.constants.encoding.utf32,
         throwOnError: true
     });
 
     t.equal(encoded, "000000230000d7990001f602000000b100000024", "Encode a string as UTF-32 in hex which includes a non-BMP character");
 
-    var plainText = jsunicode.decode("000000230000D7990001F602000000B100000024", { encoding: "UTF-32", throwOnError: true });
+    var plainText = jsunicode.decode("000000230000D7990001F602000000B100000024", { encoding: jsunicode.constants.encoding.utf32, throwOnError: true });
 
     t.equal(plainText, "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode a string encoded as UTF-32 in hex which includes a non-BMP character");
 
     encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-        encoding: "UTF-32LE",
+        encoding: jsunicode.constants.encoding.utf32le,
         throwOnError: true
     });
 
     t.equal(encoded, "2300000099d7000002f60100b100000024000000", "Encode a string as UTF-32 (Little Endian) in hex which includes a non-BMP character");
 
-    plainText = jsunicode.decode("2300000099D7000002F60100B100000024000000", { encoding: "UTF-32LE", throwOnError: true });
+    plainText = jsunicode.decode("2300000099D7000002F60100B100000024000000", { encoding: jsunicode.constants.encoding.utf32le, throwOnError: true });
 
     t.equal(plainText, "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode a string encoded as UTF-32 (Little Endian) in hex which includes a non-BMP character");
 
@@ -107,32 +107,32 @@ test("UTF-32", function (t) {
 
 test("Count", function (t) {
     t.equal(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24"), 11, "Count bytes in UTF-8");
-    t.equal(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", "UTF-16"), 12, "Count bytes in UTF-16");
-    t.equal(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", "UTF-32"), 20, "Count bytes in UTF-32");
+    t.equal(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", jsunicode.constants.encoding.utf16), 12, "Count bytes in UTF-16");
+    t.equal(jsunicode.countEncodedBytes("\x23\ud799\ud83d\ude02\u00b1\x24", jsunicode.constants.encoding.utf32), 20, "Count bytes in UTF-32");
     t.end();
 });
 
 test("Binary representations", function (t) {
-    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: "base64" }), "I+2emfCfmILCsSQ=", "Encode binary as base64 (13 bytes)");
-    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1", { byteWriter: "base64" }), "I+2emfCfmILCsQ==", "Encode binary as base64 (12 bytes)");
-    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\u00b1", { byteWriter: "base64" }), "I+2emfCfmILCscKx", "Encode binary as base64 (14 bytes)");
-    t.equal(jsunicode.encode("", { byteWriter: "base64" }), "", "Encode binary as base64 (empty)");
+    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: jsunicode.constants.binaryFormat.base64 }), "I+2emfCfmILCsSQ=", "Encode binary as base64 (13 bytes)");
+    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1", { byteWriter: jsunicode.constants.binaryFormat.base64 }), "I+2emfCfmILCsQ==", "Encode binary as base64 (12 bytes)");
+    t.equal(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\u00b1", { byteWriter: jsunicode.constants.binaryFormat.base64 }), "I+2emfCfmILCscKx", "Encode binary as base64 (14 bytes)");
+    t.equal(jsunicode.encode("", { byteWriter: jsunicode.constants.binaryFormat.base64 }), "", "Encode binary as base64 (empty)");
 
-    t.deepEqual(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: "byteArray" }), [0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], "Encode binary as byte array");
-    t.deepEqual(jsunicode.encode("", { byteWriter: "byteArray" }), [], "Encode binary as byte array (empty)");
+    t.deepEqual(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", { byteWriter: jsunicode.constants.binaryFormat.byteArray }), [0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], "Encode binary as byte array");
+    t.deepEqual(jsunicode.encode("", { byteWriter: jsunicode.constants.binaryFormat.byteArray }), [], "Encode binary as byte array (empty)");
 
     t.deepEqual(Array.prototype.slice.call(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-        byteWriter: "Uint8Array"
+        byteWriter: jsunicode.constants.binaryFormat.Uint8Array
     })), [0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], "Encode binary as a Uint8Array");
     t.deepEqual(Array.prototype.slice.call(jsunicode.encode("", {
-        byteWriter: "Uint8Array"
+        byteWriter: jsunicode.constants.binaryFormat.Uint8Array
     })), [], "Encode binary as a Uint8Array (empty)");
 
     if (isNode) {
         t.deepEqual(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-            byteWriter: "buffer"
+            byteWriter: jsunicode.constants.buffer
         }), Buffer.from([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), "Encode binary as a buffer");
-        t.deepEqual(jsunicode.encode("", { byteWriter: "buffer" }), Buffer.from([]), "Encode binary as a buffer (empty)");
+        t.deepEqual(jsunicode.encode("", { byteWriter: jsunicode.constants.buffer }), Buffer.from([]), "Encode binary as a buffer (empty)");
     }
     else {
         t.equal("", "", "NOTE: SKIPPED (only runs in node) Encode binary as a buffer");
@@ -140,33 +140,33 @@ test("Binary representations", function (t) {
     }
     
 
-    t.equal(jsunicode.decode("I+2emfCfmILCsSQ=", { byteReader: "base64" }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as base64 (13 bytes)");
-    t.equal(jsunicode.decode("I+2emfCfmILCsQ==", { byteReader: "base64" }), "\x23\ud799\ud83d\ude02\u00b1", "Decode binary as base64 (12 bytes)");
-    t.equal(jsunicode.decode("I+2emfCfmILCscKx", { byteReader: "base64" }), "\x23\ud799\ud83d\ude02\u00b1\u00b1", "Decode binary as base64 (14 bytes)");
-    t.equal(jsunicode.decode("", { byteReader: "base64" }), "", "Decode binary as base64 (empty)");
+    t.equal(jsunicode.decode("I+2emfCfmILCsSQ=", { byteReader: jsunicode.constants.binaryFormat.base64 }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as base64 (13 bytes)");
+    t.equal(jsunicode.decode("I+2emfCfmILCsQ==", { byteReader: jsunicode.constants.binaryFormat.base64 }), "\x23\ud799\ud83d\ude02\u00b1", "Decode binary as base64 (12 bytes)");
+    t.equal(jsunicode.decode("I+2emfCfmILCscKx", { byteReader: jsunicode.constants.binaryFormat.base64 }), "\x23\ud799\ud83d\ude02\u00b1\u00b1", "Decode binary as base64 (14 bytes)");
+    t.equal(jsunicode.decode("", { byteReader: jsunicode.constants.binaryFormat.base64 }), "", "Decode binary as base64 (empty)");
 
     t.equal(jsunicode.decode([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], {
-        byteReader: "byteArray"
+        byteReader: jsunicode.constants.binaryFormat.byteArray
     }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as a byte array");
-    t.equal(jsunicode.decode([], { byteReader: "byteArray" }), "", "Decode binary as a byte array (empty)");
+    t.equal(jsunicode.decode([], { byteReader: jsunicode.constants.binaryFormat.byteArray }), "", "Decode binary as a byte array (empty)");
     
     t.equal(jsunicode.decode(new Uint8Array([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), {
-        byteReader: "Uint8Array"
+        byteReader: jsunicode.constants.binaryFormat.Uint8Array
     }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as a Uint8Array");
-    t.equal(jsunicode.decode(new Uint8Array([]), { byteReader: "Uint8Array" }), "", "Decode binary as a Uint8Array (empty)");
+    t.equal(jsunicode.decode(new Uint8Array([]), { byteReader: jsunicode.constants.binaryFormat.Uint8Array }), "", "Decode binary as a Uint8Array (empty)");
     
     if (isNode) {
         t.equal(jsunicode.decode(Buffer.from([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), {
-            byteReader: "buffer"
+            byteReader: jsunicode.constants.buffer
         }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as a buffer");
-        t.equal(jsunicode.decode(Buffer.from([]), { byteReader: "buffer" }), "", "Decode binary as a buffer (empty)");
+        t.equal(jsunicode.decode(Buffer.from([]), { byteReader: jsunicode.constants.buffer }), "", "Decode binary as a buffer (empty)");
     }
     else {
         t.equal("", "", "NOTE: SKIPPED (only runs in node) Decode binary as a buffer");
         t.equal("", "", "NOTE: SKIPPED (only runs in node) Decode binary as a buffer (empty)");
     }
     
-    t.equal(jsunicode.convertBytes([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], "byteArray", "hex"), "23ed9e99f09f9882c2b124", "Convert between binary representations");
+    t.equal(jsunicode.convertBytes([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24], jsunicode.constants.binaryFormat.byteArray, jsunicode.constants.binaryFormat.hex), "23ed9e99f09f9882c2b124", "Convert between binary representations");
 
     var encoded = jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
         throwOnError: true,
@@ -177,10 +177,10 @@ test("Binary representations", function (t) {
     t.equal(encoded, "23ED9E99F09F9882C2B124", "Pass an option to a byteWriter");
 
     jsunicode.byteReader.registerPrototype("testhex", function () {
-        Object.assign(this, jsunicode.byteReader.get("hex"));
+        Object.assign(this, jsunicode.byteReader.get(jsunicode.constants.binaryFormat.hex));
     });
     jsunicode.byteWriter.registerPrototype("testhex", function () {
-        Object.assign(this, jsunicode.byteWriter.get("hex"));
+        Object.assign(this, jsunicode.byteWriter.get(jsunicode.constants.binaryFormat.hex));
     });
     t.equal(jsunicode.decode("23ed9e99f09f9882c2b124", {
         byteReader: "testhex"
@@ -416,30 +416,30 @@ test("Error handling", function (t) {
     }, jsuError, "Encode throw when invalid byteWriter settings are specified (byteWriter)");
 
     t.throws(function () {
-        var reader = jsunicode.byteReader.get("hex");
+        var reader = jsunicode.byteReader.get(jsunicode.constants.binaryFormat.hex);
         reader.begin("010");
     }, jsuError, "Throw on invalid hex decoding (char count)");
     t.throws(function () {
-        var reader = jsunicode.byteReader.get("hex");
+        var reader = jsunicode.byteReader.get(jsunicode.constants.binaryFormat.hex);
         reader.begin("zz");
         reader.read();
     }, jsuError, "Throw on invalid hex decoding (bad char)");
 
     t.throws(function () {
-        jsunicode.decode("ab", { byteReader: "base64" });
+        jsunicode.decode("ab", { byteReader: jsunicode.constants.binaryFormat.base64 });
     }, jsuError, "Throw on invalid base64 decoding (char count)");
     t.throws(function () {
-        jsunicode.decode("a=bb", { byteReader: "base64" });
+        jsunicode.decode("a=bb", { byteReader: jsunicode.constants.binaryFormat.base64 });
     }, jsuError, "Throw on invalid base64 decoding (wrong position)");
     t.throws(function () {
-        jsunicode.decode("~123", { byteReader: "base64" });
+        jsunicode.decode("~123", { byteReader: jsunicode.constants.binaryFormat.base64 });
     }, jsuError, "Throw on invalid base64 decoding (bad char)");
     t.throws(function () {
         jsunicode.decode("eda0bd", { throwOnError: true, allowEncodedSurrogatePair: true });
     }, jsuError, "Throw on invalid base64 decoding (bad encoded surrogate pair)");
 
     t.throws(function () {
-        var writer = jsunicode.byteWriter.get("hex");
+        var writer = jsunicode.byteWriter.get(jsunicode.constants.binaryFormat.hex);
         writer.write(256);
     }, jsuError, "Throw on invalid byte in binary input");
 
@@ -457,94 +457,94 @@ test("Error handling", function (t) {
     }, jsuError, "Throw on invalid UTF-8 decoding (bad code point)");
 
     t.throws(function () {
-        jsunicode.decode("01", { encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode("01", { encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on invalid UTF-16 decoding (bad byte count)");
     t.throws(function () {
-        jsunicode.decode("d83d0001", { encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode("d83d0001", { encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on invalid UTF-16 decoding (bad trailing byte)");
     t.throws(function () {
-        jsunicode.decode("d83d", { encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode("d83d", { encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on invalid UTF-16 decoding (missing trailing byte)");
     t.throws(function () {
-        jsunicode.decode("dc00", { encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode("dc00", { encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on invalid UTF-16 decoding (bad leading byte)");
 
     t.throws(function () {
-        jsunicode.decode("01", { encoding: "UTF-32", throwOnError: true });
+        jsunicode.decode("01", { encoding: jsunicode.constants.encoding.utf32, throwOnError: true });
     }, jsuError, "Throw on invalid UTF-32 decoding (bad byte count)");
 
     t.throws(function () {
-        jsunicode.encode("\ud800 ", { encoding: "UTF-8", throwOnError: true });
+        jsunicode.encode("\ud800 ", { encoding: jsunicode.constants.encoding.utf8, throwOnError: true });
     }, jsuError, "Throw on invalid strings during encoding (bad trailing byte)");
     t.throws(function () {
-        jsunicode.encode("\ud800", { encoding: "UTF-8", throwOnError: true });
+        jsunicode.encode("\ud800", { encoding: jsunicode.constants.encoding.utf8, throwOnError: true });
     }, jsuError, "Throw on invalid strings during encoding (missing trailing byte)");
     t.throws(function () {
-        jsunicode.encode("\ud800\ud800", { encoding: "UTF-8", throwOnError: true });
+        jsunicode.encode("\ud800\ud800", { encoding: jsunicode.constants.encoding.utf8, throwOnError: true });
     }, jsuError, "Throw on invalid strings during encoding (double leading byte)");
     t.throws(function () {
-        jsunicode.encode("\udc00", { encoding: "UTF-8", throwOnError: true });
+        jsunicode.encode("\udc00", { encoding: jsunicode.constants.encoding.utf8, throwOnError: true });
     }, jsuError, "Throw on invalid strings during encoding (missing leading byte)");
 
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: "hex" });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.hex });
     }, /Invalid data type/, "Throw on decode non-string hex");
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: "buffer" });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.buffer });
     }, /Invalid data type/, "Throw on decode non-string buffer");
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: "byteArray" });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.byteArray });
     }, /Invalid data type/, "Throw on decode non-string byteArray");
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: "Uint8Array" });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.Uint8Array });
     }, /Invalid data type/, "Throw on decode non-string Uint8Array");
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: "base64" });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.base64 });
     }, /Invalid data type/, "Throw on decode non-string base64");
     t.throws(function () {
         jsunicode.encode(0);
     }, /Invalid data type/, "Throw on encode non-string");
 
     t.throws(function () {
-        jsunicode.decode([-1], { byteReader: "byteArray", throwOnError: true });
+        jsunicode.decode([-1], { byteReader: jsunicode.constants.binaryFormat.byteArray, throwOnError: true });
     }, jsuError, "Throw on negative byte");
     t.throws(function () {
-        jsunicode.decode([0, -1], { byteReader: "byteArray", encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode([0, -1], { byteReader: jsunicode.constants.binaryFormat.byteArray, encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on negative byte (UTF-16)");
     t.throws(function () {
-        jsunicode.decode([0, 0, 0, -1], { byteReader: "byteArray", encoding: "UTF-32", throwOnError: true });
+        jsunicode.decode([0, 0, 0, -1], { byteReader: jsunicode.constants.binaryFormat.byteArray, encoding: jsunicode.constants.encoding.utf32, throwOnError: true });
     }, jsuError, "Throw on negative byte (UTF-32)");
     t.throws(function () {
-        jsunicode.decode([0x100], { byteReader: "byteArray", throwOnError: true });
+        jsunicode.decode([0x100], { byteReader: jsunicode.constants.binaryFormat.byteArray, throwOnError: true });
     }, jsuError, "Throw on byte > 255");
     t.throws(function () {
-        jsunicode.decode([0, 0x100], { byteReader: "byteArray", encoding: "UTF-16", throwOnError: true });
+        jsunicode.decode([0, 0x100], { byteReader: jsunicode.constants.binaryFormat.byteArray, encoding: jsunicode.constants.encoding.utf16, throwOnError: true });
     }, jsuError, "Throw on byte > 255 (UTF-16)");
     t.throws(function () {
-        jsunicode.decode([0, 0, 0, 0x100], { byteReader: "byteArray", encoding: "UTF-32", throwOnError: true });
+        jsunicode.decode([0, 0, 0, 0x100], { byteReader: jsunicode.constants.binaryFormat.byteArray, encoding: jsunicode.constants.encoding.utf32, throwOnError: true });
     }, jsuError, "Throw on byte > 255 (UTF-32)");
 
     t.equal(jsunicode.decode([-1], {
-        byteReader: "byteArray"
+        byteReader: jsunicode.constants.binaryFormat.byteArray
     }), "\ufffd", "Unknown character on negative byte");
     t.equal(jsunicode.decode([0, -1], {
-        byteReader: "byteArray",
-        encoding: "UTF-16"
+        byteReader: jsunicode.constants.binaryFormat.byteArray,
+        encoding: jsunicode.constants.encoding.utf16
     }), "\ufffd", "Unknown character on negative byte (UTF-16)");
     t.equal(jsunicode.decode([0, 0, 0, -1], {
-        byteReader: "byteArray",
-        encoding: "UTF-32"
+        byteReader: jsunicode.constants.binaryFormat.byteArray,
+        encoding: jsunicode.constants.encoding.utf32
     }), "\ufffd", "Unknown character on negative byte (UTF-32)");
     t.equal(jsunicode.decode([0x100], {
-        byteReader: "byteArray"
+        byteReader: jsunicode.constants.binaryFormat.byteArray
     }), "\ufffd", "Unknown character on byte > 255");
     t.equal(jsunicode.decode([0, 0x100], {
-        byteReader: "byteArray",
-        encoding: "UTF-16"
+        byteReader: jsunicode.constants.binaryFormat.byteArray,
+        encoding: jsunicode.constants.encoding.utf16
     }), "\ufffd", "Unknown character on byte > 255 (UTF-16)");
     t.equal(jsunicode.decode([0, 0, 0, 0x100], {
-        byteReader: "byteArray",
-        encoding: "UTF-32"
+        byteReader: jsunicode.constants.binaryFormat.byteArray,
+        encoding: jsunicode.constants.encoding.utf32
     }), "\ufffd", "Unknown character on byte > 255 (UTF-32)");
     t.equal(jsunicode.decode("2020feff"), "  \ufffd\ufffd", "Unknown character on bad high byte");
 
