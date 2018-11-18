@@ -99,6 +99,7 @@ var textBuilder = function (throwOnError, lineEndingConversion, validate) {
         if (validate) {
             return {
                 isValid: isValid,
+                exception: false,
                 errors: textBuilderResult
             };
         }

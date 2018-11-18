@@ -273,17 +273,23 @@ var decode = function (inpBytes, options) {
             return decodeInternal(inpBytes, options);
         }
         catch (error) {
-            var errorMessage = "An unexpected error has occurred";
+            var errorMessage = "Unexpected " + ((error instanceof jsuError) ? "JSUnicode " : "") +
+                "exception encountered";
+
             if (error && error.message && typeof(error.message) === "string") {
-                errorMessage = error.message;
+                errorMessage = errorMessage + ": " + error.message;
             }
             else if (typeof(error) === "string") {
-                errorMessage = error;
+                errorMessage = errorMessage + ": " + error;
             }
+
+            var errorObject = {};
+            errorObject[errorMessage] = 1;
 
             return {
                 isValid: false,
-                errs: [errorMessage]
+                exception: true,
+                errors: errorObject
             };
         }
     }

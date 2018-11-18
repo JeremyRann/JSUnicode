@@ -8,6 +8,7 @@
   * [countEncodedBytes](#countencodedbytes)
   * [convertBytes](#convertbytes)
   * [constants](#constants)
+  * [validate](#validate)
   * [createPeekableByteReader](#create_peekable_byte_reader)
   * [jsunicodeError](#jsunicodeerror)
 * [Byte Reader API](#bytereaderapi)
@@ -84,6 +85,7 @@ Where inpBytes specifies the encoded bytes which will be decoded into a string. 
 * BOMMismatchBehavior: A string specifying what JSUnicode should do if it receives conflicting information about a byte collection's encoding. This can happen if for instance the encoding option is set to UTF-8, but the input has a UTF-16BE BOM at the beginning. The possible options are in `jsunicode.constants.BOMMismatchBehavior`: "throw", "trustBOM", and "trustRequest" (the default is "throw"). Note that the encoding options "UTF-16" and "UTF-32" are somewhat loose; for those options, JSUnicode will use the presense of a Byte Order Mark to determine endianness but default to Big Endian if there is no BOM. If no encoding is specified (or it's set to "guess"), UTF-8 is assumed.
 * lineEndingConversion: A string specifying if JSUnicode should attempt to alter line endings while decoding. Options are in `jsunicode.constants.lineEndingConversion`: "none", "lf", "crlf", and "cr" (default "none").
 * byteReaderOptions: An options object that is passed along to the byteReader. None of the built-in byteReaders have additional options, although any new byteReaders registered get access to this options object should they need it.
+* validate: A boolean indicating if the output should be the decoded string or a validation object (see validate function documentation below)
 
 For example, to decode the above encoding example:
 ```javascript
@@ -122,6 +124,63 @@ Where inpBytes is the binary format you which to convert, byteReaderName specifi
 ### constants
 
 A constants object is provided on the jsunicode object for convenience. Using the constants object ensures that you can more easily find references to particular encodings or binaryFormats in your code base for example, but there is no reason to expect that the actual string values of any of these constants will change in a future version of JSUnicode, so if you prefer to use string literals instead of references to this object, it should be perfectly safe.
+
+<a name="validate"></a>
+### validate
+
+Validates a binary representation
+
+```javascript
+jsunicode.validate([inpBytes], [options])
+```
+Where inpBytes is the binary data you want to validate and options is an optional object which is passed to the decoder (exactly the same options as available in the decode function). The result of the validate function is an object with three properties:
+
+* isValid: a boolean property indicating if the binary data is valid
+* exception: a boolean property indicating if an exception was encountered (will always be false if isValid is true)
+* errors: An object relating errors encountered with the count of each error (will always be an empty object if isValid is true)
+
+For example, here's what validating good binary data looks like:
+
+```javascript
+jsunicode.validate("2020");
+/*
+{
+    "isValid": true,
+    "exception": false,
+    "errors": {}
+}
+*/
+```
+
+An example of invalid binary data:
+
+```javascript
+jsunicode.validate("ffff");
+/*
+{
+    "isValid": false,
+    "exception": false,
+    "errors": {
+        "Invalid leading byte": 2
+    }
+}
+*/
+```
+
+Note that if an exception is encountered, the error count for the error encountered will always be 1, and the error message will be the object key. Generally, validation errors that would cause invalid output in the result string if throwOnError is false will show as errors with the exception property set to true, and the count indicates how many invalid characters would be sent, whereas errors that would cause exceptions regardless of the throwOnError property will result in a validation object with the exception property set to true. Here is an example of validation output for a case where the binary representation itself is invalid:
+
+```javascript
+jsunicode.validate("zzzz");
+/*
+{
+    "isValid": false,
+    "exception": true,
+    "errors": {
+        "Unexpected JSUnicode exception encountered: Invalid hex byte": 1
+    }
+}
+*/
+```
 
 <a name="jsunicodeerror"></a>
 ### jsunicodeError
