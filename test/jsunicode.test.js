@@ -130,9 +130,9 @@ test("Binary representations", function (t) {
 
     if (isNode) {
         t.deepEqual(jsunicode.encode("\x23\ud799\ud83d\ude02\u00b1\x24", {
-            byteWriter: jsunicode.constants.buffer
+            byteWriter: jsunicode.constants.binaryFormat.buffer
         }), Buffer.from([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), "Encode binary as a buffer");
-        t.deepEqual(jsunicode.encode("", { byteWriter: jsunicode.constants.buffer }), Buffer.from([]), "Encode binary as a buffer (empty)");
+        t.deepEqual(jsunicode.encode("", { byteWriter: jsunicode.constants.binaryFormat.buffer }), Buffer.from([]), "Encode binary as a buffer (empty)");
     }
     else {
         t.equal("", "", "NOTE: SKIPPED (only runs in node) Encode binary as a buffer");
@@ -157,9 +157,9 @@ test("Binary representations", function (t) {
     
     if (isNode) {
         t.equal(jsunicode.decode(Buffer.from([0x23, 0xED, 0x9E, 0x99, 0xF0, 0x9F, 0x98, 0x82, 0xC2, 0xB1, 0x24]), {
-            byteReader: jsunicode.constants.buffer
+            byteReader: jsunicode.constants.binaryFormat.buffer
         }), "\x23\ud799\ud83d\ude02\u00b1\x24", "Decode binary as a buffer");
-        t.equal(jsunicode.decode(Buffer.from([]), { byteReader: jsunicode.constants.buffer }), "", "Decode binary as a buffer (empty)");
+        t.equal(jsunicode.decode(Buffer.from([]), { byteReader: jsunicode.constants.binaryFormat.buffer }), "", "Decode binary as a buffer (empty)");
     }
     else {
         t.equal("", "", "NOTE: SKIPPED (only runs in node) Decode binary as a buffer");
@@ -490,7 +490,7 @@ test("Error handling", function (t) {
         jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.hex });
     }, /Invalid data type/, "Throw on decode non-string hex");
     t.throws(function () {
-        jsunicode.decode(0, { byteReader: jsunicode.constants.buffer });
+        jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.buffer });
     }, /Invalid data type/, "Throw on decode non-string buffer");
     t.throws(function () {
         jsunicode.decode(0, { byteReader: jsunicode.constants.binaryFormat.byteArray });

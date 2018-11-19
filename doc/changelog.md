@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1
+
+### Bug Fixes
+
+* Fixed broken test for node buffer (functionality all fine, just error in test)
+
 ## 1.2.0
 
 1.2.0 adds validation functionality
