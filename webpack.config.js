@@ -47,13 +47,6 @@ module.exports = function (env) {
             // mode, we'll use the environment variable for now so builds are small but dev mode works.
             Buffer: (env === "dev")
         },
-        /* webpack-dev-server is currently in "maintenance-only mode", and the docs
-         * suggest webpack-serve instead; unforunately, webpack-serve has terrible
-         * documentation and googling it continually pulls up webpack-dev-server
-         * examples instead. There is no compelling reason to migrate yet, so as of
-         * this writing screw it; webpack-dev-server it is. Hopefully in the future
-         * either webpack-serve will be easier to use or another alternative will
-         * appear. */
         optimization: {
             minimize: process.env.MIN === "false" ? false : true
         },
