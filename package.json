@@ -26,9 +26,9 @@
     },
     "devDependencies": {
         "detect-node": "^2.0.3",
-        "eslint": "^4.19.1",
-        "eslint-loader": "^2.0.0",
-        "npm-watch": "^0.3.0",
+        "eslint": "^6.4.0",
+        "eslint-loader": "^3.0.0",
+        "npm-watch": "^0.6.0",
         "tap-spec": "^5.0.0",
         "tape": "^4.9.0",
         "tape-catch": "^1.0.6",
