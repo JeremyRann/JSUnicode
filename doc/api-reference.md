@@ -37,7 +37,7 @@ Encodes a JavaScript string into a binary value
 ```javascript
 jsunicode.encode([inpString], [options]);
 ```
-Where inpString is the string you wish to encode and options is an optional object specifying more detail about the encoding. The options object supports the following members:
+Where inpString is the string you wish to encode and options is an optional object. The options object supports the following members:
 * encoding: A string specifying the Unicode encoding variant to use. Default is "UTF-8". Encoding values are contained in the constants object `jsunicode.constants.encoding`. Supported values are:
     * UTF-8
     * UTF-16 (defaults to Big Endian)

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-JSUnicode is primarily in the business of converting to and from binary representations. Although it is designed to cover common cases, there may be times it is convenient to make JSUnicode aware of a binary representation that is not built-in. One such case could be for usage in a cryptography library, where internally binary data might be stored in an array of 32-bit words for performance reasons. This document will provide an example of registering a new byteReader and byteWriter to JSUnicode for a fictitious library which requires 32-bit words internally. Note that there are more examples of registering byteReaders and byteWriters within the source code; JSUnicode internally uses the same mechanism to register byteReaders/byteWriters as seen here. You can see all built in byteReaders/byteWriters at [src/jsunicode.bytereader.js](https://github.com/JeremyRann/JSUnicode/blob/master/src/jsunicode.bytereader.js) and [src/jsunicode.bytewriter.js](https://github.com/JeremyRann/JSUnicode/blob/master/src/jsunicode.bytewriter.js). For this example. we expect a binary representation to be an object with a `length` property and a `words` property, such as this:
+JSUnicode is primarily about converting to and from binary representations. Although it is designed to cover common cases, it can be extended to cover other binary representations. One such case could be for usage in a cryptography library, where binary data might be stored in an array of 32-bit words. This document will provide an example of registering a new byteReader and byteWriter to JSUnicode for a fictitious library which requires 32-bit words internally. Note that there are more examples of registering byteReaders and byteWriters within the source code; JSUnicode internally uses the same mechanism to register byteReaders/byteWriters as seen here. You can see all built in byteReaders/byteWriters at [src/jsunicode.bytereader.js](https://github.com/JeremyRann/JSUnicode/blob/master/src/jsunicode.bytereader.js) and [src/jsunicode.bytewriter.js](https://github.com/JeremyRann/JSUnicode/blob/master/src/jsunicode.bytewriter.js). For this example. we expect a binary representation to be an object with a `length` property and a `words` property, such as this:
 
 ``` javascript
 {
@@ -27,7 +27,7 @@ jsunicode.decode({ length: 6, words: [0x68656c6c, 0x6f210000] }, { byteReader: "
 
 ## The byteWriter
 
-We'll use the `registerFactory` mechanism to register our new byteWriter, although you can use `registerPrototype` if you want to use an object prototype instead (which would be instantiated using the `new` keyword). So, we need a function that when called returns an object with three properties: write, finish, and serialize. This byteWriter object will also be expected to internally keep track of what's been written between it's initialization and when `finish` is called. We'll start with some scaffolding:
+We'll use the `registerFactory` mechanism to register our new byteWriter, although you can use `registerPrototype` if you want to use an object prototype instead (which would be instantiated using the `new` keyword). We need a function that returns an object with three properties: write, finish, and serialize. This byteWriter object will also be expected to internally keep track of what's been written between it's initialization and when `finish` is called. We'll start with some scaffolding:
 
 ``` javascript
 var word32ByteWriterFactory = function () {

@@ -53,7 +53,7 @@ fs.readFile("./myfile.txt", {
 }, function (err, contents) { console.log(contents); });
 ```
 
-If you want to use JSUnicode to ready a UTF-16BE file, you might do something like this:
+If you want to use JSUnicode to read a UTF-16BE file, you might do something like this:
 
 ```javascript
 var fs = require("fs");
