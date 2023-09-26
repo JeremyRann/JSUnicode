@@ -8,6 +8,31 @@ var register = function (name, byteReader) {
     byteReaders[name] = byteReader;
 };
 
+var hexLookup = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
+    "a": 10,
+    "b": 11,
+    "c": 12,
+    "d": 13,
+    "e": 14,
+    "f": 15,
+    "A": 10,
+    "B": 11,
+    "C": 12,
+    "D": 13,
+    "E": 14,
+    "F": 15
+};
+
 var registerFactory = function (name, byteReaderFactory) {
     if (typeof (byteReaderFactory) !== "function") {
         throw new Error("byteReaderFactory must be a function");
@@ -48,12 +73,14 @@ registerFactory(constants.binaryFormat.hex, function () {
             return null;
         }
 
-        var currentByte = parseInt(inpString.substring(index, index + 2), 16);
-        if (isNaN(currentByte)) {
+        var byte1 = hexLookup[inpString.substring(index, index + 1)];
+        var byte2 = hexLookup[inpString.substring(index + 1, index + 2)];
+
+        if (byte1 === undefined || byte2 === undefined) {
             throw new jsuError("Invalid hex byte");
         }
         index = index + 2;
-        return currentByte;
+        return 16 * byte1 + byte2;
     };
 
     var deserialize = function (inpStr) {

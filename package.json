@@ -12,7 +12,7 @@
         "test": "node test/jsunicode.test.js",
         "lint": "eslint src test",
         "lint_test": "npm run lint && npm run test",
-        "watch": "nodemon --exec 'npm run lint_test'"
+        "watch": "nodemon --exec \"npm run lint_test\""
     },
     "keywords": [
         "JavaScript",

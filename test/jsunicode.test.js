@@ -264,7 +264,7 @@ test("Decode BOM handling", function (t) {
     t.equal(jsunicode.decode("efbbbf20", {
         encoding: jc.encoding.utf16le,
         BOMMismatchBehavior: jc.BOMMismatchBehavior.trustBOM
-    }), " ", "Trust Request over BOM with BOM size mismatch");
+    }), " ", "Trust BOM over Request with BOM size mismatch");
     t.equal(jsunicode.decode("efbbbf0020", {
         encoding: jc.encoding.utf16,
         BOMMismatchBehavior: jc.BOMMismatchBehavior.trustRequest
@@ -424,6 +424,11 @@ test("Error handling", function (t) {
         reader.begin("zz");
         reader.read();
     }, jsuError, "Throw on invalid hex decoding (bad char)");
+    t.throws(function () {
+        var reader = jsunicode.byteReader.get(jsunicode.constants.binaryFormat.hex);
+        reader.begin("az");
+        reader.read();
+    }, jsuError, "Throw on invalid hex decoding (half bad char)");
 
     t.throws(function () {
         jsunicode.decode("ab", { byteReader: jsunicode.constants.binaryFormat.base64 });
