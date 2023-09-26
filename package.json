@@ -22,7 +22,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/JeremyRann/JSUnicode"
+        "url": "git+https://github.com/JeremyRann/JSUnicode.git"
     },
     "devDependencies": {
         "detect-node": "^2.0.4",
