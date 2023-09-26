@@ -23,7 +23,7 @@ $(document).ready(function () {
                         });
                     }
                     else if (tokens[1] === "test") {
-                        $.getScript("jsunicode.test.js").done(function () {
+                        $.getScript("dist/jsunicode.test.js").done(function () {
                             $("body").removeClass("not-loaded").addClass("loaded").addClass("test");
                         }).fail(function () {
                             $("pre.error").show().text("Error loading tests");

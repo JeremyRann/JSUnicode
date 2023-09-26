@@ -1,5 +1,27 @@
 # JSUnicode
 
+## NOTICE
+
+JSUnicode's current code base is fairly far out-of-date. The landscape has changed sufficiently enough to justify re-tooling the project (and possibly re-writing it in TypeScript). This branch (called "legacy-workspace" as of this writing) is here to get the project running enough to see version 1. The browser builds don't really work out-of-the box anymore, so to build it you need to enable legacy ssl mode (https://stackoverflow.com/a/69699772/2850538) before running the build. You can then run npm start and it will serve a basic test page with the most recently-built JSUnicode. The tape tests generally still work. To enable legacy ssl mode:
+
+On Unix-like (Linux, macOS, Git bash, etc.):
+
+``` bash
+export NODE_OPTIONS=--openssl-legacy-provider
+```
+
+On Windows command prompt:
+
+```bat
+set NODE_OPTIONS=--openssl-legacy-provider
+```
+
+On PowerShell:
+
+```ps1
+$env:NODE_OPTIONS = "--openssl-legacy-provider"
+```
+
 ## Overview
 
 JSUnicode is a set of JavaScript utilities for handling Unicode. JSUnicode's capabilities include:
